@@ -34,7 +34,6 @@ go.work.sum
 # Local tooling / generated artifacts
 .rtk/
 graphify-out/
-SPEC.md
 
 # Editor / tooling local config
 .vscode/
