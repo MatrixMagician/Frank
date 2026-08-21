@@ -30,3 +30,8 @@ go.work.sum
 # Editor/IDE
 # .idea/
 # .vscode/
+
+# Local tooling / generated artifacts
+.rtk/
+graphify-out/
+SPEC.md
