@@ -35,3 +35,6 @@ go.work.sum
 .rtk/
 graphify-out/
 SPEC.md
+
+# Editor / tooling local config
+.vscode/
