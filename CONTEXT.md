@@ -16,7 +16,7 @@ exactly one Outcome.
 _Avoid_: run, attempt, test, send.
 
 **Target Host**:
-The SMTP server Frank connects to — a smart host, a relay, or an MX selected for a
+The SMTP server Frank connects to. A smart host, a relay, or an MX selected for a
 recipient domain.
 _Avoid_: server, destination, MX (an MX is one way of choosing a Target Host, not a
 synonym for it).
@@ -29,7 +29,7 @@ _Avoid_: log, output, capture, session.
 **Phase**:
 A named step of the conversation (dial, banner, EHLO, STARTTLS, MAIL FROM, RCPT TO,
 DATA, end-of-data, QUIT) to which an Outcome and a duration can be attributed. DATA
-and end-of-data are separate Phases: a refusal of the `DATA` verb is policy on the
+and end-of-data are separate Phases. A refusal of the `DATA` verb is policy on the
 envelope, a refusal of the terminating dot is policy on the message.
 _Avoid_: step, stage, post-DATA.
 
@@ -48,7 +48,7 @@ _Avoid_: payload, test email, body.
 **Identity Slot**:
 One of the three roles Frank varies independently: Envelope Sender, HELO Identity,
 Header From.
-_Avoid_: bare "identity" — it collides with Identity Triple.
+_Avoid_: bare "identity", which collides with Identity Triple.
 
 **Identity Triple**:
 One concrete filling of all three Identity Slots. A Probe uses exactly one.
@@ -68,8 +68,8 @@ The address in the Probe Message's `From:` header. In DMARC terms, RFC5322.From.
 _Avoid_: display from, author.
 
 **Domain Pair**:
-The Envelope Sender's domain and the Header From's domain — what SPF authenticates
-and what DMARC aligns against, respectively. When the Envelope Sender is null, SPF's
+The Envelope Sender's domain and the Header From's domain, which are what SPF
+authenticates and what DMARC aligns against, respectively. When the Envelope Sender is null, SPF's
 subject is the HELO Identity's domain instead, and a Verdict always names which
 subject it evaluated. The unit `auth` evaluates.
 _Avoid_: sender and recipient, the two domains.
@@ -83,7 +83,7 @@ observation, never an inference.
 _Avoid_: result, finding.
 
 **Acceptance**:
-A 2xx reply to end-of-data. The strongest fact a Probe can establish — it is not
+A 2xx reply to end-of-data. The strongest fact a Probe can establish. It is not
 evidence of delivery, and Frank never claims otherwise.
 _Avoid_: delivered, sent, success, inboxed.
 
@@ -92,18 +92,19 @@ A permanent (5xx) refusal at a given Phase.
 _Avoid_: failure, bounce, error.
 
 **Deferral**:
-A transient (4xx) refusal — greylisting, rate limiting, temporary unavailability. A
-Deferral is not a Rejection and proves nothing about the Identity Triple that met it.
+A transient (4xx) refusal, meaning greylisting, rate limiting, or temporary
+unavailability. A Deferral is not a Rejection and proves nothing about the Identity
+Triple that met it.
 _Avoid_: soft bounce, retry, temp fail.
 
 **Verdict**:
-What the published records say for a domain — the SPF result and its Matched
-Mechanism, the DMARC policy, the Alignment outcome. Computed from DNS, independent of
+What the published records say for a domain. The SPF result and its Matched Mechanism,
+the DMARC policy, the Alignment outcome. Computed from DNS, independent of
 any Probe.
 _Avoid_: result, finding, assessment.
 
 **Diagnosis**:
-The evidential synthesis of Outcomes and Verdicts that `explain` produces: a statement
+The evidential synthesis of Outcomes and Verdicts that `explain` produces. A statement
 of cause supported by both, explicit about ambiguity and about which further Probe
 would resolve it.
 _Avoid_: explanation, conclusion, analysis.
@@ -116,7 +117,7 @@ recorded in the Transcript.
 _Avoid_: local IP, our IP, client IP.
 
 **Candidate Sending IP**:
-The IP address an SPF Verdict is computed for — a hypothesis about which host the
+The IP address an SPF Verdict is computed for. A hypothesis about which host the
 receiving system will check. Defaults to the Source Address, which is wrong whenever
 the Target Host relays onward, so every Verdict names the Candidate Sending IP it used
 and whether it was observed or supplied.
@@ -157,6 +158,8 @@ _Avoid_: grid, sweep, campaign.
 **Cell**:
 One Identity Triple and every Probe run for it. A Cell resolves to Accepted if any
 Probe reached Acceptance, Rejected if one met a Rejection and none reached Acceptance,
-and Inconclusive if only Deferrals were seen — an Inconclusive Cell is never reported
-as a rejected Triple.
+Inconclusive if only Deferrals were seen, and Unrun if the Matrix aborted before
+reaching it. Neither an Inconclusive nor an Unrun Cell is ever reported as a rejected
+Triple, and the two are rendered distinctly: one was asked and would not answer, the
+other was never asked.
 _Avoid_: run, entry, case.
