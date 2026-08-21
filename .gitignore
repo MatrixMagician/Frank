@@ -37,3 +37,6 @@ graphify-out/
 
 # Editor / tooling local config
 .vscode/
+
+# Local decision trail for long runs
+decisions.tsv

@@ -94,8 +94,8 @@ func tlsClaims() {
 	hookCalled := false
 	var hookChains int
 	conn := tls.Client(raw, &tls.Config{
-		ServerName:            "frank.test",
-		InsecureSkipVerify:    true,
+		ServerName:             "frank.test",
+		InsecureSkipVerify:     true,
 		SessionTicketsDisabled: true,
 		VerifyPeerCertificate: func(rawCerts [][]byte, verified [][]*x509.Certificate) error {
 			hookCalled = true
