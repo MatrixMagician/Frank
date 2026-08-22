@@ -65,6 +65,20 @@ func matrixCmd(opts *Options, args []string, stdout, stderr io.Writer) Code {
 		return CodeUsage
 	}
 
+	// The rate is resolved before the send gate: a refused rate is a flag error
+	// the operator can fix, and asking the confirmation question first would
+	// hide it behind an unrelated message. matrix may lower the rate and can
+	// never raise it, and the request is refused rather than clamped.
+	var ratePtr *int
+	if opts.Explicit["rate"] {
+		ratePtr = &opts.Rate
+	}
+	rate, err := gate.ResolveRate(ratePtr)
+	if err != nil {
+		fmt.Fprintf(stderr, "frank matrix: %v\n", err)
+		return CodeUsage
+	}
+
 	decision, err := gate.Decide(gate.Input{
 		DryRunRequested: opts.DryRun,
 		ConfirmSend:     opts.ConfirmSend,
@@ -75,19 +89,7 @@ func matrixCmd(opts *Options, args []string, stdout, stderr io.Writer) Code {
 		fmt.Fprintf(stderr, "frank matrix: %v\n", err)
 		return CodeUsage
 	}
-
-	// matrix may lower the rate and can never raise it, which NewLimiter
-	// enforces by refusing rather than clamping.
-	var ratePtr *int
-	if opts.Explicit["rate"] {
-		ratePtr = &opts.Rate
-	}
-	rate, err := gate.ResolveRate(ratePtr)
-	if err != nil {
-		fmt.Fprintf(stderr, "frank matrix: %v\n", err)
-		return CodeUsage
-	}
-	limiter := gate.NewLimiter(rate, gate.RealClock{})
+	limiter := gate.NewLimiter(rate, clockFor(opts))
 
 	creds, _ := smtpconv.CredentialsFromEnv()
 
@@ -108,7 +110,7 @@ func matrixCmd(opts *Options, args []string, stdout, stderr io.Writer) Code {
 			Credentials:   creds,
 		},
 		Limiter: limiter,
-		Backoff: gate.NewBackoff(gate.BackoffConfig{}, gate.RealClock{}),
+		Backoff: gate.NewBackoff(gate.BackoffConfig{}, clockFor(opts)),
 	})
 	if err != nil {
 		fmt.Fprintf(stderr, "frank matrix: %v\n", err)

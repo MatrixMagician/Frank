@@ -78,6 +78,19 @@ func probeCmd(opts *Options, args []string, stdout, stderr io.Writer) Code {
 		return CodeUsage
 	}
 
+	// The rate is resolved first: a refused rate is a flag error the operator
+	// can fix, and asking the confirmation question first would hide it behind
+	// an unrelated message.
+	var ratePtr *int
+	if opts.Explicit["rate"] {
+		ratePtr = &opts.Rate
+	}
+	rate, err := gate.ResolveRate(ratePtr)
+	if err != nil {
+		fmt.Fprintf(stderr, "frank probe: %v\n", err)
+		return CodeUsage
+	}
+
 	// The gate runs before anything is dialed, so a run that would have to
 	// prompt with no terminal errors before the target is touched.
 	decision, err := gate.Decide(gate.Input{
@@ -90,17 +103,7 @@ func probeCmd(opts *Options, args []string, stdout, stderr io.Writer) Code {
 		fmt.Fprintf(stderr, "frank probe: %v\n", err)
 		return CodeUsage
 	}
-
-	var ratePtr *int
-	if opts.Explicit["rate"] {
-		ratePtr = &opts.Rate
-	}
-	rate, err := gate.ResolveRate(ratePtr)
-	if err != nil {
-		fmt.Fprintf(stderr, "frank probe: %v\n", err)
-		return CodeUsage
-	}
-	limiter := gate.NewLimiter(rate, gate.RealClock{})
+	limiter := gate.NewLimiter(rate, clockFor(opts))
 	if err := limiter.Wait(context.Background()); err != nil {
 		fmt.Fprintf(stderr, "frank probe: %v\n", err)
 		return CodeIncomplete

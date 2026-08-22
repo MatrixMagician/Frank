@@ -7,9 +7,34 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/MatrixMagician/Frank/internal/gate"
 	"github.com/MatrixMagician/Frank/internal/report"
 	"github.com/MatrixMagician/Frank/internal/version"
 )
+
+// clockFor is the clock a verb paces through, defaulting to real time.
+func clockFor(opts *Options) gate.Clock {
+	if opts.Clock != nil {
+		return opts.Clock
+	}
+	return gate.RealClock{}
+}
+
+// loadConfigInto decodes --config when one was given and folds it into opts. It
+// is separate from Main so a test can exercise config precedence without
+// driving a whole verb.
+func loadConfigInto(opts *Options) (*report.Config, error) {
+	if opts.Config == "" {
+		return nil, nil
+	}
+	cfg, err := report.Load(opts.Config)
+	if err != nil {
+		return nil, err
+	}
+	opts.File = cfg
+	applyConfig(opts, cfg)
+	return cfg, nil
+}
 
 // applyConfig fills in every global setting the operator did not give
 // explicitly. An explicit flag always wins, which is why this consults the
@@ -50,7 +75,10 @@ type Options struct {
 	Version     bool
 	// File is the decoded config, kept so a verb can read the settings that
 	// have no global flag of their own.
-	File     *report.Config
+	File *report.Config
+	// Clock is the time seam every verb paces through. A test substitutes a
+	// fake so a run whose rate limit describes minutes costs microseconds.
+	Clock    gate.Clock
 	Help     bool
 	Explicit map[string]bool
 }
@@ -104,11 +132,18 @@ func ParseGlobalFlags(args []string, stderr io.Writer) (*Options, []string, erro
 }
 
 func Main(args []string, stdout, stderr io.Writer) Code {
+	return run(args, stdout, stderr, nil)
+}
+
+// run is Main with the clock injectable, so a test can drive a rate-limited
+// sweep without spending the minutes its limit describes.
+func run(args []string, stdout, stderr io.Writer, clock gate.Clock) Code {
 	opts, rest, err := ParseGlobalFlags(args, stderr)
 	if err != nil {
 		usage(stderr)
 		return CodeUsage
 	}
+	opts.Clock = clock
 
 	if opts.Help {
 		usage(stdout)
@@ -120,14 +155,9 @@ func Main(args []string, stdout, stderr io.Writer) Code {
 		return CodeAcceptance
 	}
 
-	if opts.Config != "" {
-		cfg, err := report.Load(opts.Config)
-		if err != nil {
-			fmt.Fprintf(stderr, "frank: %v\n", err)
-			return CodeUsage
-		}
-		opts.File = cfg
-		applyConfig(opts, cfg)
+	if _, err := loadConfigInto(opts); err != nil {
+		fmt.Fprintf(stderr, "frank: %v\n", err)
+		return CodeUsage
 	}
 
 	if len(rest) == 0 {
