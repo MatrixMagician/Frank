@@ -22,7 +22,10 @@ step "static binary" bash -c 'CGO_ENABLED=0 go build -o /tmp/frank-predicate . &
 step "no dependencies" bash -c '[ ! -s go.sum ]'
 step "tests (race)" env CGO_ENABLED=1 go test -race ./...
 
-step "ledger references resolve" ./scripts/verify-ledger.sh
+# The name-and-package checks are instant; re-running all 85 named tests
+# individually costs ~16s and the suite has just run them anyway, so that part
+# is opt-in here and always on in CI.
+step "ledger references resolve" env LEDGER_RUN_TESTS="${LEDGER_RUN_TESTS:-0}" ./scripts/verify-ledger.sh
 
 echo
 pending=$(awk -F'\t' 'NR>1 && $4!="done"' docs/acceptance.tsv | wc -l)

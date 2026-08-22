@@ -33,6 +33,17 @@ jobs:
 
       # The race detector is the one place cgo is required. The shipped binary is
       # built with CGO_ENABLED=0 above; this only affects the test process.
+      - name: Verify the acceptance ledger names tests that exist and pass
+        env:
+          CGO_ENABLED: 1
+          LEDGER_RUN_TESTS: "1"
+        run: ./scripts/verify-ledger.sh
+
+      - name: Prove the acceptance tests can fail
+        env:
+          CGO_ENABLED: 1
+        run: ./scripts/prove-tests-bite.sh
+
       - name: Test with the race detector
         env:
           CGO_ENABLED: 1
