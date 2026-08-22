@@ -88,3 +88,4 @@ id	issue	acceptance_criterion	status	test	mutation_proven
 14.5	14	A key set to zero is distinguishable from an absent key, with tests for the rate and verification cases	done	report.TestZeroValueDistinctFromAbsent	not-yet
 14.6	14	Explicit flags beat config values	done	report.TestExplicitFlagBeatsConfigValue	not-yet
 14.7	14	An end-to-end run against the test double yields a report that needs no source reading, and exit codes are asserted	done	cli.TestEndToEndReportAgainstDouble	yes
+14.8	14	Artefacts survive concurrent runs: written by rename, never truncated in place	done	report.TestArtefactsAreNeverTruncatedInPlace, report.TestFailedWriteLeavesThePreviousArtefactIntact, report.TestConcurrentWritesLeaveParseableFiles	yes

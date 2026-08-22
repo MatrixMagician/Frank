@@ -3,9 +3,13 @@ package report
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
+	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -270,5 +274,135 @@ func TestReportRedactionAppliesToBothRenderings(t *testing.T) {
 	}
 	if strings.Contains(jsonOut.String(), "ceo@victim.example") {
 		t.Error("the json report leaks a redacted address")
+	}
+}
+
+// TestConcurrentWritesLeaveParseableFiles guards a defect found by running
+// four probes against one --output directory: os.Create truncates and then
+// fills, so the writers interleaved and left a report.json that no longer
+// parsed. Writes go through a temporary file and a rename now, so a reader
+// sees one run's output or another's, never a mixture.
+func TestConcurrentWritesLeaveParseableFiles(t *testing.T) {
+	dir := t.TempDir()
+
+	var wg sync.WaitGroup
+	for i := range 8 {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			r := sampleReport(t)
+			r.Command = fmt.Sprintf("frank probe --target host-%d.example:25", i)
+			if _, _, err := r.Write(dir); err != nil {
+				t.Errorf("Write: %v", err)
+			}
+		}()
+	}
+	wg.Wait()
+
+	raw, err := os.ReadFile(filepath.Join(dir, "report.json"))
+	if err != nil {
+		t.Fatalf("read report.json: %v", err)
+	}
+	var doc map[string]any
+	if err := json.Unmarshal(raw, &doc); err != nil {
+		t.Fatalf("report.json does not parse after concurrent writes: %v\n%s", err, raw)
+	}
+	if _, ok := doc["transcript"]; !ok {
+		t.Error("report.json parses but is missing its transcript section")
+	}
+
+	text, err := os.ReadFile(filepath.Join(dir, "report.txt"))
+	if err != nil {
+		t.Fatalf("read report.txt: %v", err)
+	}
+	if got := strings.Count(string(text), "FRANK DELIVERABILITY REPORT"); got != 1 {
+		t.Errorf("report.txt contains %d headers, want exactly 1: two runs were interleaved", got)
+	}
+
+	if entries, err := os.ReadDir(dir); err == nil {
+		for _, e := range entries {
+			if strings.HasPrefix(e.Name(), ".") {
+				t.Errorf("a temporary file %q was left behind", e.Name())
+			}
+		}
+	}
+}
+
+// TestArtefactsAreNeverTruncatedInPlace is the structural guarantee behind the
+// concurrency fix. Reproducing a corrupted file by racing writers is
+// inherently flaky, so instead of timing the race this asserts the property
+// that makes it impossible: the final path is only ever created by a rename,
+// never opened for truncation. A writer that truncates in place can always be
+// interrupted, whether or not a given run catches it.
+func TestArtefactsAreNeverTruncatedInPlace(t *testing.T) {
+	dir := t.TempDir()
+	path := filepath.Join(dir, "artefact.json")
+
+	// Pre-place a sentinel. If WriteFileAtomically truncates in place, the
+	// sentinel's inode survives with new contents; a rename replaces it.
+	if err := os.WriteFile(path, []byte("sentinel"), 0o644); err != nil {
+		t.Fatalf("seed: %v", err)
+	}
+	before, err := os.Stat(path)
+	if err != nil {
+		t.Fatalf("stat: %v", err)
+	}
+
+	if err := WriteFileAtomically(path, func(w io.Writer) error {
+		_, err := io.WriteString(w, `{"replaced":true}`)
+		return err
+	}); err != nil {
+		t.Fatalf("WriteFileAtomically: %v", err)
+	}
+
+	after, err := os.Stat(path)
+	if err != nil {
+		t.Fatalf("stat after: %v", err)
+	}
+	if os.SameFile(before, after) {
+		t.Error("the file was written in place, so a concurrent reader can observe a half-written artefact")
+	}
+
+	raw, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatalf("read: %v", err)
+	}
+	if string(raw) != `{"replaced":true}` {
+		t.Errorf("contents = %q, want the new document", raw)
+	}
+}
+
+// TestFailedWriteLeavesThePreviousArtefactIntact is the other half: a render
+// that errors must not destroy what was there, which truncating in place does
+// before it can discover the error.
+func TestFailedWriteLeavesThePreviousArtefactIntact(t *testing.T) {
+	dir := t.TempDir()
+	path := filepath.Join(dir, "artefact.json")
+
+	if err := os.WriteFile(path, []byte("previous"), 0o644); err != nil {
+		t.Fatalf("seed: %v", err)
+	}
+
+	wantErr := errors.New("render failed")
+	if err := WriteFileAtomically(path, func(io.Writer) error { return wantErr }); !errors.Is(err, wantErr) {
+		t.Fatalf("err = %v, want the render error", err)
+	}
+
+	raw, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatalf("read: %v", err)
+	}
+	if string(raw) != "previous" {
+		t.Errorf("contents = %q, want the previous artefact untouched after a failed render", raw)
+	}
+
+	entries, err := os.ReadDir(dir)
+	if err != nil {
+		t.Fatalf("readdir: %v", err)
+	}
+	for _, e := range entries {
+		if strings.HasPrefix(e.Name(), ".") {
+			t.Errorf("a temporary file %q was left behind after a failed render", e.Name())
+		}
 	}
 }

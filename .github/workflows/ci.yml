@@ -44,6 +44,11 @@ jobs:
           CGO_ENABLED: 1
         run: ./scripts/prove-tests-bite.sh
 
+      - name: Integration checks across separate processes
+        env:
+          CGO_ENABLED: 0
+        run: ./scripts/integration.sh
+
       - name: Test with the race detector
         env:
           CGO_ENABLED: 1

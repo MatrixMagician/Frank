@@ -243,22 +243,14 @@ func writeReports(dir string, tr *transcript.Transcript, r *transcript.Redactor,
 		return fmt.Errorf("create output directory: %w", err)
 	}
 
-	textFile, err := os.Create(filepath.Join(dir, "transcript.txt"))
-	if err != nil {
-		return fmt.Errorf("create transcript.txt: %w", err)
-	}
-	defer textFile.Close()
-	if err := transcript.RenderText(textFile, tr, r); err != nil {
-		return fmt.Errorf("render transcript.txt: %w", err)
+	if err := report.WriteFileAtomically(filepath.Join(dir, "transcript.txt"),
+		func(w io.Writer) error { return transcript.RenderText(w, tr, r) }); err != nil {
+		return fmt.Errorf("write transcript.txt: %w", err)
 	}
 
-	jsonFile, err := os.Create(filepath.Join(dir, "transcript.json"))
-	if err != nil {
-		return fmt.Errorf("create transcript.json: %w", err)
-	}
-	defer jsonFile.Close()
-	if err := transcript.RenderJSON(jsonFile, tr, r); err != nil {
-		return fmt.Errorf("render transcript.json: %w", err)
+	if err := report.WriteFileAtomically(filepath.Join(dir, "transcript.json"),
+		func(w io.Writer) error { return transcript.RenderJSON(w, tr, r) }); err != nil {
+		return fmt.Errorf("write transcript.json: %w", err)
 	}
 
 	// Both renderings of the combined report always land here too. --json

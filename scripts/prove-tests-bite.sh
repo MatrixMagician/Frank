@@ -361,5 +361,10 @@ mutate 14.7 "one report combines every section a reader needs" \
 	"s = s.replace('fmt.Fprintln(&b, \\\"\\\\n== TRANSCRIPT ==\\\")', 'if false { fmt.Fprintln(&b, \\\"\\\") }')" \
 	TestEndToEndReportAgainstDouble ./internal/cli/
 
+mutate 14.8 "artefacts are replaced by a rename, never truncated in place" \
+	internal/report/atomic.go \
+	"s = s.replace('tmp, err := os.CreateTemp(dir, \".\"+filepath.Base(path)+\".*\")', '_ = dir; tmp, err := os.Create(path)').replace('if err := os.Rename(tmpName, path); err != nil {', 'if false {')" \
+	TestArtefactsAreNeverTruncatedInPlace ./internal/report/
+
 printf '\n%d pinned, %d not pinned\n' "$pass" "$fail"
 [ "$fail" -eq 0 ]

@@ -149,21 +149,10 @@ func (r *Report) Write(dir string) (textPath, jsonPath string, err error) {
 	textPath = filepath.Join(dir, "report.txt")
 	jsonPath = filepath.Join(dir, "report.json")
 
-	textFile, err := os.Create(textPath)
-	if err != nil {
+	if err := WriteFileAtomically(textPath, r.RenderText); err != nil {
 		return "", "", err
 	}
-	defer textFile.Close()
-	if err := r.RenderText(textFile); err != nil {
-		return "", "", err
-	}
-
-	jsonFile, err := os.Create(jsonPath)
-	if err != nil {
-		return "", "", err
-	}
-	defer jsonFile.Close()
-	if err := r.RenderJSON(jsonFile); err != nil {
+	if err := WriteFileAtomically(jsonPath, r.RenderJSON); err != nil {
 		return "", "", err
 	}
 
