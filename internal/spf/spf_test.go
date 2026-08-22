@@ -621,3 +621,33 @@ func TestCandidateSendingIPRecordsWhetherItWasObserved(t *testing.T) {
 		t.Error("supplied address reports itself as observed, but ADR-0002 requires the Verdict to say which it was")
 	}
 }
+
+// TestSameDomainOnTwoIncludeBranchesIsNotACycle guards the difference between
+// a domain recurring on its own path, which is a real cycle, and the same
+// domain named by two independent branches, which is ordinary and common.
+func TestSameDomainOnTwoIncludeBranchesIsNotACycle(t *testing.T) {
+	// The first branch must NOT match, so evaluation reaches the second branch
+	// and asks about shared.example a second time. That second visit is what a
+	// path-insensitive cycle check would wrongly call a loop.
+	z := resolve.NewZone()
+	z.TXT("example.com", "v=spf1 include:a.example include:b.example -all")
+	z.TXT("a.example", "v=spf1 include:shared.example -all")
+	z.TXT("b.example", "v=spf1 include:shared.example ip4:192.0.2.0/24 -all")
+	z.TXT("shared.example", "v=spf1 ip4:198.51.100.0/24 -all")
+
+	got := evaluate(t, z, "a@example.com", "frank.invalid", "192.0.2.7")
+	if got.Verdict != Pass {
+		t.Errorf("Verdict = %v, want pass: two branches naming the same domain is not a cycle", got.Verdict)
+	}
+}
+
+func TestIncludeCycleIsPermError(t *testing.T) {
+	z := resolve.NewZone()
+	z.TXT("example.com", "v=spf1 include:loop.example -all")
+	z.TXT("loop.example", "v=spf1 include:example.com -all")
+
+	got := evaluate(t, z, "a@example.com", "frank.invalid", "192.0.2.7")
+	if got.Verdict != PermError {
+		t.Errorf("Verdict = %v, want permerror for a domain recurring on its own path", got.Verdict)
+	}
+}

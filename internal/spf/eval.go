@@ -122,12 +122,18 @@ func subjectDomain(req Request) (domain, from string) {
 // evaluateDomain evaluates the SPF record at domain and returns the
 // resulting Verdict and its Matched node. depth is used only to record on
 // each Node; the lookup limit is a flat counter shared across the whole
-// evaluation, not a per-depth budget, per RFC 7208 §4.6.4.
+// evaluation, not a per-depth budget, per RFC 7208 §4.6.4. visited tracks
+// only the current include/redirect path (pushed on entry, popped on
+// return), not every domain ever seen: two independent include branches are
+// free to name the same domain, and only a domain recurring on its own
+// path is an actual cycle.
 func (e *evaluator) evaluateDomain(ctx context.Context, domain string, depth int, clientIP netip.Addr) (Verdict, *Node, error) {
-	if e.visited[strings.ToLower(domain)] {
+	key := strings.ToLower(domain)
+	if e.visited[key] {
 		return PermError, nil, nil
 	}
-	e.visited[strings.ToLower(domain)] = true
+	e.visited[key] = true
+	defer delete(e.visited, key)
 
 	terms, verdict, done := e.fetchRecord(ctx, domain, depth)
 	if done {
