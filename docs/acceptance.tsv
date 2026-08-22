@@ -68,13 +68,13 @@ id	issue	acceptance_criterion	status
 11.3	11	Credentials are read from the environment and the config file, and never from a flag	done
 11.4	11	A test asserts the credential appears in neither rendering, in either mechanism	done
 11.5	11	The advertised mechanism list is recorded, and an unsupported-mechanism case reports clearly	done
-12.1	12	Against a test double rejecting one specific Triple, that Cell resolves Rejected and all others Accepted	pending
-12.2	12	A fresh connection per Cell, asserted by counting connections at the test double	pending
-12.3	12	A greylisting host produces an Inconclusive Cell, and a retry that succeeds resolves it to Accepted	pending
-12.4	12	An aborted sweep leaves Unrun Cells that render distinctly from Inconclusive ones	pending
-12.5	12	`--rate` is honoured and cannot be raised above the default	pending
-12.6	12	The matrix exits 1 if any Cell is Rejected, otherwise 4 if any is Inconclusive or Unrun, otherwise 0	pending
-12.7	12	Runs clean under the race detector	pending
+12.1	12	Against a test double rejecting one specific Triple, that Cell resolves Rejected and all others Accepted	done
+12.2	12	A fresh connection per Cell, asserted by counting connections at the test double	done
+12.3	12	A greylisting host produces an Inconclusive Cell, and a retry that succeeds resolves it to Accepted	done
+12.4	12	An aborted sweep leaves Unrun Cells that render distinctly from Inconclusive ones	done
+12.5	12	`--rate` is honoured and cannot be raised above the default	done
+12.6	12	The matrix exits 1 if any Cell is Rejected, otherwise 4 if any is Inconclusive or Unrun, otherwise 0	done
+12.7	12	Runs clean under the race detector	done
 13.1	13	Golden-file tests cover alignment failure, over-limit SPF, TLS refusal and greylisting	pending
 13.2	13	Observed Outcomes and computed Verdicts are distinguishable in the output	pending
 13.3	13	An ambiguous case says so and names the disambiguating Probe	pending
