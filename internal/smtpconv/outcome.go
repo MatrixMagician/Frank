@@ -48,9 +48,9 @@ func NewOutcome(phase transcript.Phase, reply transcript.Reply) (Outcome, error)
 	}
 }
 
-func (o Outcome) Kind() OutcomeKind        { return o.kind }
-func (o Outcome) Phase() transcript.Phase  { return o.phase }
-func (o Outcome) Reply() transcript.Reply  { return o.reply }
-func (o Outcome) IsAcceptance() bool       { return o.kind == OutcomeAcceptance }
-func (o Outcome) IsRejection() bool        { return o.kind == OutcomeRejection }
-func (o Outcome) IsDeferral() bool         { return o.kind == OutcomeDeferral }
+func (o Outcome) Kind() OutcomeKind       { return o.kind }
+func (o Outcome) Phase() transcript.Phase { return o.phase }
+func (o Outcome) Reply() transcript.Reply { return o.reply }
+func (o Outcome) IsAcceptance() bool      { return o.kind == OutcomeAcceptance }
+func (o Outcome) IsRejection() bool       { return o.kind == OutcomeRejection }
+func (o Outcome) IsDeferral() bool        { return o.kind == OutcomeDeferral }
