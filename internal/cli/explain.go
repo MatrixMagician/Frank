@@ -52,7 +52,15 @@ func explainCmd(opts *Options, args []string, stdout, stderr io.Writer) Code {
 	}
 
 	in := explain.Input{Transcript: tr}
-	if err := populateVerdicts(context.Background(), &in, tr, ef, resolve.NewSystem()); err != nil {
+	if ef.authPath != "" {
+		// SPEC.md: without --auth Frank performs the lookups itself. With it,
+		// the supplied Verdicts are used as given, so a Diagnosis can be
+		// reproduced from a captured pair without touching DNS again.
+		if err := loadAuth(ef.authPath, &in); err != nil {
+			fmt.Fprintf(stderr, "frank explain: %s is not a readable auth document: %v\n", ef.authPath, err)
+			return CodeUsage
+		}
+	} else if err := populateVerdicts(context.Background(), &in, tr, ef, resolve.NewSystem()); err != nil {
 		fmt.Fprintf(stderr, "frank explain: %v\n", err)
 	}
 
@@ -70,6 +78,27 @@ func explainCmd(opts *Options, args []string, stdout, stderr io.Writer) Code {
 	}
 
 	return CodeAcceptance
+}
+
+// loadAuth reads a captured auth document, which is a report.json or the auth
+// half of one. Only the sections a Diagnosis draws on are required.
+func loadAuth(path string, in *explain.Input) error {
+	raw, err := os.ReadFile(path)
+	if err != nil {
+		return err
+	}
+	var doc struct {
+		SPF   *spf.Result   `json:"spf"`
+		DMARC *dmarc.Result `json:"dmarc"`
+	}
+	if err := json.Unmarshal(raw, &doc); err != nil {
+		return err
+	}
+	if doc.SPF == nil && doc.DMARC == nil {
+		return fmt.Errorf("the document carries neither an spf nor a dmarc section")
+	}
+	in.SPF, in.DMARC = doc.SPF, doc.DMARC
+	return nil
 }
 
 // transcriptDoc mirrors what transcript.RenderJSON writes, which is the shape

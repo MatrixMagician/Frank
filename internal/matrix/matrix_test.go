@@ -208,7 +208,7 @@ func TestRateHonouredAndCannotBeRaised(t *testing.T) {
 		t.Fatalf("Run: %v", err)
 	}
 
-	for i, d := range clock.Slept() {
+	for i, d := range clock.Sleeps() {
 		if d != 30*time.Second {
 			t.Errorf("gap %d = %v, want 30s for two per minute", i+1, d)
 		}

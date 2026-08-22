@@ -60,17 +60,6 @@ func NewFakeClockAtEpoch() *FakeClock {
 	return NewFakeClock(time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC))
 }
 
-// Slept is an alias for Sleeps, kept because callers read more naturally as
-// "what did it sleep for".
-func (c *FakeClock) Slept() []time.Duration { return c.Sleeps() }
-
-// Advance moves the virtual clock forward without recording a sleep.
-func (c *FakeClock) Advance(d time.Duration) {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-	c.now = c.now.Add(d)
-}
-
 // sleepWithContext sleeps unless ctx ends first. A fake clock is advanced
 // directly, so a test never blocks on real time.
 func sleepWithContext(ctx context.Context, clock Clock, d time.Duration) error {

@@ -118,6 +118,23 @@ func (i Identifier) MarshalJSON() ([]byte, error) {
 	return json.Marshal(i.String())
 }
 
+// UnmarshalJSON exists so a rendered report reads back. A forensics artefact
+// that cannot be reloaded is only half an artefact, and `frank explain --auth`
+// reloads exactly this.
+func (i *Identifier) UnmarshalJSON(data []byte) error {
+	var s string
+	if err := json.Unmarshal(data, &s); err != nil {
+		return err
+	}
+	for n, name := range identifierNames {
+		if name == s {
+			*i = Identifier(n)
+			return nil
+		}
+	}
+	return fmt.Errorf("dmarc: unknown identifier %q", s)
+}
+
 // Policy is one parsed DMARC policy record.
 type Policy struct {
 	// Domain is the name the record was actually found at: the Header From
