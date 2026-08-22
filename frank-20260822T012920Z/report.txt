@@ -1,0 +1,42 @@
+FRANK DELIVERABILITY REPORT
+generated: 2026-08-22T01:29:20Z
+command: frank probe --target 127.0.0.1:1
+
+== DIAGNOSIS ==
+diagnosis: the probe never reached the target, so nothing was established about the identities: dial tcp 127.0.0.1:1: connect: connection refused
+confidence: supported
+evidence:
+  - observed: the dial failed: dial tcp 127.0.0.1:1: connect: connection refused
+next probe: confirm the target host and port are reachable, then probe again
+
+== SPF ==
+subject: b.com (from the envelope-sender)
+candidate sending ip: none supplied, so the verdict is not evaluated
+verdict: not-evaluated
+matched mechanism: none
+lookups: 0/10
+evaluation tree:
+  (empty)
+
+== DMARC ==
+subject: b.com (from the envelope-sender)
+policy: none found
+spf alignment: authenticated="b.com" header-from="b.com" relaxed=true strict=true
+dkim alignment: authenticated="" header-from="b.com" relaxed=false strict=false
+effective policy: none
+dmarc: fail
+
+== TRANSCRIPT ==
+target: 127.0.0.1:1
+recipient: a@b.com
+envelope-sender: a@b.com
+helo-identity: h
+header-from: a@b.com
+source-address: 
+---
+[       952ns] dial        *** dial 127.0.0.1:1
+[   265.029µs] dial        !!! dial tcp 127.0.0.1:1: connect: connection refused
+[   282.932µs] dial        ... 
+                          note: send disposition: dry-run, --dry-run requested
+---
+redacted-spans: 0

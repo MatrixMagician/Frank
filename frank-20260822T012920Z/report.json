@@ -1,0 +1,88 @@
+{
+  "command": "frank probe --target 127.0.0.1:1",
+  "diagnosis": {
+    "summary": "the probe never reached the target, so nothing was established about the identities: dial tcp 127.0.0.1:1: connect: connection refused",
+    "confidence": "supported",
+    "evidence": [
+      {
+        "observed": true,
+        "text": "the dial failed: dial tcp 127.0.0.1:1: connect: connection refused"
+      }
+    ],
+    "next_probe": "confirm the target host and port are reachable, then probe again"
+  },
+  "dmarc": {
+    "Found": false,
+    "Policy": null,
+    "SPFAlignment": {
+      "Identifier": "spf",
+      "AuthenticatedDomain": "b.com",
+      "HeaderFromDomain": "b.com",
+      "Relaxed": true,
+      "Strict": true
+    },
+    "DKIMAlignment": {
+      "Identifier": "dkim",
+      "AuthenticatedDomain": "",
+      "HeaderFromDomain": "b.com",
+      "Relaxed": false,
+      "Strict": false
+    },
+    "Pass": false,
+    "EffectivePolicy": "none",
+    "Caveats": null,
+    "Subject": "b.com",
+    "SubjectFrom": "envelope-sender"
+  },
+  "generated_at": "2026-08-22T01:29:20Z",
+  "spf": {
+    "Verdict": "not-evaluated",
+    "Subject": "b.com",
+    "SubjectFrom": "envelope-sender",
+    "Matched": null,
+    "Tree": {
+      "Subject": "b.com",
+      "Nodes": null
+    },
+    "Findings": null,
+    "Lookups": 0,
+    "ClientIP": null
+  },
+  "transcript": {
+    "events": [
+      {
+        "kind": "dial",
+        "monotonic_ns": 952,
+        "phase": "dial",
+        "raw": "dial 127.0.0.1:1",
+        "wall": "2026-08-22T02:29:20.203492518+01:00"
+      },
+      {
+        "kind": "error",
+        "monotonic_ns": 265029,
+        "phase": "dial",
+        "raw": "dial tcp 127.0.0.1:1: connect: connection refused",
+        "wall": "2026-08-22T02:29:20.203756835+01:00"
+      },
+      {
+        "kind": "note",
+        "monotonic_ns": 282932,
+        "note": "send disposition: dry-run, --dry-run requested",
+        "phase": "dial",
+        "raw": "",
+        "wall": "2026-08-22T02:29:20.203774508+01:00"
+      }
+    ],
+    "identity": {
+      "envelope_sender": "a@b.com",
+      "header_from": "a@b.com",
+      "helo_identity": "h"
+    },
+    "recipient": "a@b.com",
+    "redacted_spans": 0,
+    "source_address": "",
+    "start": "2026-08-22T02:29:20.203491496+01:00",
+    "target_host": "127.0.0.1:1",
+    "tls": null
+  }
+}

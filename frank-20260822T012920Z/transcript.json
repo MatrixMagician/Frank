@@ -1,0 +1,37 @@
+{
+  "start": "2026-08-22T02:29:20.203491496+01:00",
+  "target_host": "127.0.0.1:1",
+  "identity": {
+    "envelope_sender": "a@b.com",
+    "helo_identity": "h",
+    "header_from": "a@b.com"
+  },
+  "recipient": "a@b.com",
+  "source_address": "",
+  "tls": null,
+  "events": [
+    {
+      "kind": "dial",
+      "phase": "dial",
+      "monotonic_ns": 952,
+      "wall": "2026-08-22T02:29:20.203492518+01:00",
+      "raw": "dial 127.0.0.1:1"
+    },
+    {
+      "kind": "error",
+      "phase": "dial",
+      "monotonic_ns": 265029,
+      "wall": "2026-08-22T02:29:20.203756835+01:00",
+      "raw": "dial tcp 127.0.0.1:1: connect: connection refused"
+    },
+    {
+      "kind": "note",
+      "phase": "dial",
+      "monotonic_ns": 282932,
+      "wall": "2026-08-22T02:29:20.203774508+01:00",
+      "raw": "",
+      "note": "send disposition: dry-run, --dry-run requested"
+    }
+  ],
+  "redacted_spans": 0
+}

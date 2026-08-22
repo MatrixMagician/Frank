@@ -1,0 +1,13 @@
+target: 127.0.0.1:1
+recipient: a@b.com
+envelope-sender: a@b.com
+helo-identity: h
+header-from: a@b.com
+source-address: 
+---
+[       952ns] dial        *** dial 127.0.0.1:1
+[   265.029µs] dial        !!! dial tcp 127.0.0.1:1: connect: connection refused
+[   282.932µs] dial        ... 
+                          note: send disposition: dry-run, --dry-run requested
+---
+redacted-spans: 0
