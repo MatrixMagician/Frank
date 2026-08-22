@@ -7,6 +7,12 @@ import (
 	"net/netip"
 )
 
+// dialDNS is the single point through which every System resolver reaches the
+// network. It is a package variable so ForbidNetwork can replace it in tests:
+// a System builds its own net.Resolver, so a hook on net.DefaultResolver would
+// leave this path open and the suite could still make a real query.
+var dialDNS func(ctx context.Context, network, address string) (net.Conn, error)
+
 // System is the Resolver backed by the standard library's DNS client. It
 // forces PreferGo so the pure-Go resolver is used even on a platform or
 // build where cgo is available, per ADR-0006 and issue #7: the shipped
@@ -19,7 +25,7 @@ type System struct {
 // NewSystem returns a System resolver. It performs no I/O; the network is
 // only touched when a Lookup method is called.
 func NewSystem() *System {
-	return &System{resolver: &net.Resolver{PreferGo: true}}
+	return &System{resolver: &net.Resolver{PreferGo: true, Dial: dialDNS}}
 }
 
 var _ Resolver = (*System)(nil)

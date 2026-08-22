@@ -19,15 +19,14 @@ import (
 // a real DNS server or any other network endpoint through the default
 // resolver.
 func ForbidNetwork(m *testing.M) int {
-	net.DefaultResolver.Dial = func(ctx context.Context, network, address string) (net.Conn, error) {
+	deny := func(ctx context.Context, network, address string) (net.Conn, error) {
 		return nil, errors.New("resolve: network access forbidden in tests (ForbidNetwork installed this guard)")
 	}
+	net.DefaultResolver.Dial = deny
+	dialDNS = deny
 	return m.Run()
 }
 
 func TestMain(m *testing.M) {
-	code := ForbidNetwork(m)
-	if code != 0 {
-		panic("resolve package tests failed")
-	}
+	os.Exit(ForbidNetwork(m))
 }

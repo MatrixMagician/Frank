@@ -38,12 +38,12 @@ id	issue	acceptance_criterion	status
 6.5	6	The rate limiter defaults to 6 per minute and is asserted by a timing test	pending
 6.6	6	An attempt to raise the rate above the default is refused	pending
 6.7	6	Repeated Deferrals back off exponentially and abort past a threshold	pending
-7.1	7	An interface covering TXT, A/AAAA, MX, PTR and NS that the standard resolver satisfies	pending
-7.2	7	A fixture resolver seeded from a table, with no network access	pending
-7.3	7	Multi-string TXT records arrive as a single concatenated string	pending
-7.4	7	Non-existent name and no-record-of-this-type are distinguishable to callers	pending
-7.5	7	The real resolver is forced to the pure-Go implementation, with no CGO	pending
-7.6	7	A test proves the suite makes no outbound DNS query	pending
+7.1	7	An interface covering TXT, A/AAAA, MX, PTR and NS that the standard resolver satisfies	done
+7.2	7	A fixture resolver seeded from a table, with no network access	done
+7.3	7	Multi-string TXT records arrive as a single concatenated string	done
+7.4	7	Non-existent name and no-record-of-this-type are distinguishable to callers	done
+7.5	7	The real resolver is forced to the pure-Go implementation, with no CGO	done
+7.6	7	A test proves the suite makes no outbound DNS query	done
 8.1	8	Table-driven tests over zone fixtures cover nested includes, redirect, and each Verdict class	pending
 8.2	8	The Matched Mechanism is reported correctly for each case	pending
 8.3	8	Over-limit records are detected and reported as a finding	pending
