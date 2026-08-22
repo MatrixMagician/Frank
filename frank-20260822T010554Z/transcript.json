@@ -1,0 +1,267 @@
+{
+  "start": "2026-08-22T02:05:54.165826216+01:00",
+  "target_host": "gmail-smtp-in.l.google.com:25",
+  "identity": {
+    "envelope_sender": "probe@example.com",
+    "helo_identity": "frank.invalid",
+    "header_from": "probe@example.com"
+  },
+  "recipient": "postmaster@gmail.com",
+  "source_address": "192.168.1.98",
+  "tls": {
+    "version": "TLS 1.3",
+    "cipher": "TLS_AES_128_GCM_SHA256",
+    "server_name": "gmail-smtp-in.l.google.com",
+    "chain": [
+      {
+        "subject": "CN=mx.google.com",
+        "issuer": "CN=WR2,O=Google Trust Services,C=US",
+        "not_before": "2026-08-05T20:43:42Z",
+        "not_after": "2026-10-28T20:43:41Z",
+        "dns_names": [
+          "mx.google.com",
+          "smtp.google.com",
+          "aspmx.l.google.com",
+          "alt1.aspmx.l.google.com",
+          "alt2.aspmx.l.google.com",
+          "alt3.aspmx.l.google.com",
+          "alt4.aspmx.l.google.com",
+          "gmail-smtp-in.l.google.com",
+          "alt1.gmail-smtp-in.l.google.com",
+          "alt2.gmail-smtp-in.l.google.com",
+          "alt3.gmail-smtp-in.l.google.com",
+          "alt4.gmail-smtp-in.l.google.com",
+          "gmr-smtp-in.l.google.com",
+          "alt1.gmr-smtp-in.l.google.com",
+          "alt2.gmr-smtp-in.l.google.com",
+          "alt3.gmr-smtp-in.l.google.com",
+          "alt4.gmr-smtp-in.l.google.com",
+          "mx1.smtp.goog",
+          "mx2.smtp.goog",
+          "mx3.smtp.goog",
+          "mx4.smtp.goog",
+          "aspmx2.googlemail.com",
+          "aspmx3.googlemail.com",
+          "aspmx4.googlemail.com",
+          "aspmx5.googlemail.com",
+          "gmr-mx.google.com"
+        ],
+        "serial_number": "43171454576686893190723416909266396192"
+      },
+      {
+        "subject": "CN=WR2,O=Google Trust Services,C=US",
+        "issuer": "CN=GTS Root R1,O=Google Trust Services LLC,C=US",
+        "not_before": "2023-12-13T09:00:00Z",
+        "not_after": "2029-02-20T14:00:00Z",
+        "serial_number": "170058220837755766831192027518741805976"
+      },
+      {
+        "subject": "CN=GTS Root R1,O=Google Trust Services LLC,C=US",
+        "issuer": "CN=GlobalSign Root CA,OU=Root CA,O=GlobalSign nv-sa,C=BE",
+        "not_before": "2020-06-19T00:00:42Z",
+        "not_after": "2028-01-28T00:00:42Z",
+        "serial_number": "159159747900478145820483398898491642637"
+      }
+    ],
+    "verified": true
+  },
+  "events": [
+    {
+      "kind": "dial",
+      "phase": "dial",
+      "monotonic_ns": 1182,
+      "wall": "2026-08-22T02:05:54.165827489+01:00",
+      "raw": "dial gmail-smtp-in.l.google.com:25"
+    },
+    {
+      "kind": "recv",
+      "phase": "banner",
+      "monotonic_ns": 69082254,
+      "wall": "2026-08-22T02:05:54.234909332+01:00",
+      "raw": "220 mx.google.com ESMTP ffacd0b85a97d-482c9c07c01si503216f8f.176 - gsmtp\r\n",
+      "reply": {
+        "code": 220,
+        "text": "mx.google.com ESMTP ffacd0b85a97d-482c9c07c01si503216f8f.176 - gsmtp",
+        "lines": [
+          "mx.google.com ESMTP ffacd0b85a97d-482c9c07c01si503216f8f.176 - gsmtp"
+        ]
+      }
+    },
+    {
+      "kind": "send",
+      "phase": "ehlo",
+      "monotonic_ns": 69097563,
+      "wall": "2026-08-22T02:05:54.234923849+01:00",
+      "raw": "EHLO frank.invalid\r\n"
+    },
+    {
+      "kind": "recv",
+      "phase": "ehlo",
+      "monotonic_ns": 81024463,
+      "wall": "2026-08-22T02:05:54.2468511+01:00",
+      "raw": "250-mx.google.com at your service, [140.228.65.63]\r\n250-SIZE 157286400\r\n250-8BITMIME\r\n250-STARTTLS\r\n250-ENHANCEDSTATUSCODES\r\n250-PIPELINING\r\n250-CHUNKING\r\n250 SMTPUTF8\r\n",
+      "reply": {
+        "code": 250,
+        "text": "mx.google.com at your service, [140.228.65.63]\nSIZE 157286400\n8BITMIME\nSTARTTLS\nENHANCEDSTATUSCODES\nPIPELINING\nCHUNKING\nSMTPUTF8",
+        "lines": [
+          "mx.google.com at your service, [140.228.65.63]",
+          "SIZE 157286400",
+          "8BITMIME",
+          "STARTTLS",
+          "ENHANCEDSTATUSCODES",
+          "PIPELINING",
+          "CHUNKING",
+          "SMTPUTF8"
+        ]
+      }
+    },
+    {
+      "kind": "note",
+      "phase": "ehlo",
+      "monotonic_ns": 81047136,
+      "wall": "2026-08-22T02:05:54.246873392+01:00",
+      "raw": "",
+      "note": "advertised extensions: SIZE 157286400, 8BITMIME, STARTTLS, ENHANCEDSTATUSCODES, PIPELINING, CHUNKING, SMTPUTF8"
+    },
+    {
+      "kind": "send",
+      "phase": "starttls",
+      "monotonic_ns": 81050332,
+      "wall": "2026-08-22T02:05:54.246876598+01:00",
+      "raw": "STARTTLS\r\n"
+    },
+    {
+      "kind": "recv",
+      "phase": "starttls",
+      "monotonic_ns": 89633458,
+      "wall": "2026-08-22T02:05:54.255460325+01:00",
+      "raw": "220 2.0.0 Ready to start TLS\r\n",
+      "reply": {
+        "code": 220,
+        "enhanced": {
+          "class": 2,
+          "subject": 0,
+          "detail": 0
+        },
+        "text": "Ready to start TLS",
+        "lines": [
+          "2.0.0 Ready to start TLS"
+        ]
+      }
+    },
+    {
+      "kind": "tls",
+      "phase": "starttls",
+      "monotonic_ns": 108637229,
+      "wall": "2026-08-22T02:05:54.274463525+01:00",
+      "raw": "",
+      "note": "tls TLS 1.3 with TLS_AES_128_GCM_SHA256, server name gmail-smtp-in.l.google.com, verification succeeded"
+    },
+    {
+      "kind": "send",
+      "phase": "ehlo",
+      "monotonic_ns": 108640095,
+      "wall": "2026-08-22T02:05:54.274466351+01:00",
+      "raw": "EHLO frank.invalid\r\n"
+    },
+    {
+      "kind": "recv",
+      "phase": "ehlo",
+      "monotonic_ns": 117298172,
+      "wall": "2026-08-22T02:05:54.283124788+01:00",
+      "raw": "250-mx.google.com at your service, [140.228.65.63]\r\n250-SIZE 157286400\r\n250-8BITMIME\r\n250-ENHANCEDSTATUSCODES\r\n250-PIPELINING\r\n250-CHUNKING\r\n250 SMTPUTF8\r\n",
+      "reply": {
+        "code": 250,
+        "text": "mx.google.com at your service, [140.228.65.63]\nSIZE 157286400\n8BITMIME\nENHANCEDSTATUSCODES\nPIPELINING\nCHUNKING\nSMTPUTF8",
+        "lines": [
+          "mx.google.com at your service, [140.228.65.63]",
+          "SIZE 157286400",
+          "8BITMIME",
+          "ENHANCEDSTATUSCODES",
+          "PIPELINING",
+          "CHUNKING",
+          "SMTPUTF8"
+        ]
+      }
+    },
+    {
+      "kind": "send",
+      "phase": "mail-from",
+      "monotonic_ns": 117319812,
+      "wall": "2026-08-22T02:05:54.283146108+01:00",
+      "raw": "MAIL FROM:\u003cprobe@example.com\u003e\r\n"
+    },
+    {
+      "kind": "recv",
+      "phase": "mail-from",
+      "monotonic_ns": 126094098,
+      "wall": "2026-08-22T02:05:54.291920535+01:00",
+      "raw": "250 2.1.0 OK ffacd0b85a97d-482c9c07c01si503216f8f.176 - gsmtp\r\n",
+      "reply": {
+        "code": 250,
+        "enhanced": {
+          "class": 2,
+          "subject": 1,
+          "detail": 0
+        },
+        "text": "OK ffacd0b85a97d-482c9c07c01si503216f8f.176 - gsmtp",
+        "lines": [
+          "2.1.0 OK ffacd0b85a97d-482c9c07c01si503216f8f.176 - gsmtp"
+        ]
+      }
+    },
+    {
+      "kind": "send",
+      "phase": "rcpt-to",
+      "monotonic_ns": 126102053,
+      "wall": "2026-08-22T02:05:54.291928339+01:00",
+      "raw": "RCPT TO:\u003cpostmaster@gmail.com\u003e\r\n"
+    },
+    {
+      "kind": "recv",
+      "phase": "rcpt-to",
+      "monotonic_ns": 134784406,
+      "wall": "2026-08-22T02:05:54.300610702+01:00",
+      "raw": "250 2.1.5 OK ffacd0b85a97d-482c9c07c01si503216f8f.176 - gsmtp\r\n",
+      "reply": {
+        "code": 250,
+        "enhanced": {
+          "class": 2,
+          "subject": 1,
+          "detail": 5
+        },
+        "text": "OK ffacd0b85a97d-482c9c07c01si503216f8f.176 - gsmtp",
+        "lines": [
+          "2.1.5 OK ffacd0b85a97d-482c9c07c01si503216f8f.176 - gsmtp"
+        ]
+      }
+    },
+    {
+      "kind": "send",
+      "phase": "quit",
+      "monotonic_ns": 134788414,
+      "wall": "2026-08-22T02:05:54.30061471+01:00",
+      "raw": "QUIT\r\n"
+    },
+    {
+      "kind": "recv",
+      "phase": "quit",
+      "monotonic_ns": 143251263,
+      "wall": "2026-08-22T02:05:54.30907755+01:00",
+      "raw": "221 2.0.0 closing connection ffacd0b85a97d-482c9c07c01si503216f8f.176 - gsmtp\r\n",
+      "reply": {
+        "code": 221,
+        "enhanced": {
+          "class": 2,
+          "subject": 0,
+          "detail": 0
+        },
+        "text": "closing connection ffacd0b85a97d-482c9c07c01si503216f8f.176 - gsmtp",
+        "lines": [
+          "2.0.0 closing connection ffacd0b85a97d-482c9c07c01si503216f8f.176 - gsmtp"
+        ]
+      }
+    }
+  ],
+  "redacted_spans": 0
+}

@@ -1,0 +1,34 @@
+target: gmail-smtp-in.l.google.com:25
+recipient: postmaster@gmail.com
+envelope-sender: probe@example.com
+helo-identity: frank.invalid
+header-from: probe@example.com
+source-address: 192.168.1.98
+---
+[     1.182µs] dial        *** dial gmail-smtp-in.l.google.com:25
+[ 69.082254ms] banner      <-- 220 mx.google.com ESMTP ffacd0b85a97d-482c9c07c01si503216f8f.176 - gsmtp\r\n
+                          reply: code=220 enhanced=- text="mx.google.com ESMTP ffacd0b85a97d-482c9c07c01si503216f8f.176 - gsmtp"
+[ 69.097563ms] ehlo        --> EHLO frank.invalid\r\n
+[ 81.024463ms] ehlo        <-- 250-mx.google.com at your service, [140.228.65.63]\r\n250-SIZE 157286400\r\n250-8BITMIME\r\n250-STARTTLS\r\n250-ENHANCEDSTATUSCODES\r\n250-PIPELINING\r\n250-CHUNKING\r\n250 SMTPUTF8\r\n
+                          reply: code=250 enhanced=- text="mx.google.com at your service, [140.228.65.63]\nSIZE 157286400\n8BITMIME\nSTARTTLS\nENHANCEDSTATUSCODES\nPIPELINING\nCHUNKING\nSMTPUTF8"
+[ 81.047136ms] ehlo        ... 
+                          note: advertised extensions: SIZE 157286400, 8BITMIME, STARTTLS, ENHANCEDSTATUSCODES, PIPELINING, CHUNKING, SMTPUTF8
+[ 81.050332ms] starttls    --> STARTTLS\r\n
+[ 89.633458ms] starttls    <-- 220 2.0.0 Ready to start TLS\r\n
+                          reply: code=220 enhanced=2.0.0 text="Ready to start TLS"
+[108.637229ms] starttls    +++ 
+                          note: tls TLS 1.3 with TLS_AES_128_GCM_SHA256, server name gmail-smtp-in.l.google.com, verification succeeded
+[108.640095ms] ehlo        --> EHLO frank.invalid\r\n
+[117.298172ms] ehlo        <-- 250-mx.google.com at your service, [140.228.65.63]\r\n250-SIZE 157286400\r\n250-8BITMIME\r\n250-ENHANCEDSTATUSCODES\r\n250-PIPELINING\r\n250-CHUNKING\r\n250 SMTPUTF8\r\n
+                          reply: code=250 enhanced=- text="mx.google.com at your service, [140.228.65.63]\nSIZE 157286400\n8BITMIME\nENHANCEDSTATUSCODES\nPIPELINING\nCHUNKING\nSMTPUTF8"
+[117.319812ms] mail-from   --> MAIL FROM:<probe@example.com>\r\n
+[126.094098ms] mail-from   <-- 250 2.1.0 OK ffacd0b85a97d-482c9c07c01si503216f8f.176 - gsmtp\r\n
+                          reply: code=250 enhanced=2.1.0 text="OK ffacd0b85a97d-482c9c07c01si503216f8f.176 - gsmtp"
+[126.102053ms] rcpt-to     --> RCPT TO:<postmaster@gmail.com>\r\n
+[134.784406ms] rcpt-to     <-- 250 2.1.5 OK ffacd0b85a97d-482c9c07c01si503216f8f.176 - gsmtp\r\n
+                          reply: code=250 enhanced=2.1.5 text="OK ffacd0b85a97d-482c9c07c01si503216f8f.176 - gsmtp"
+[134.788414ms] quit        --> QUIT\r\n
+[143.251263ms] quit        <-- 221 2.0.0 closing connection ffacd0b85a97d-482c9c07c01si503216f8f.176 - gsmtp\r\n
+                          reply: code=221 enhanced=2.0.0 text="closing connection ffacd0b85a97d-482c9c07c01si503216f8f.176 - gsmtp"
+---
+redacted-spans: 0

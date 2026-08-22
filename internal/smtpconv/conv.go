@@ -2,6 +2,7 @@ package smtpconv
 
 import (
 	"bufio"
+	"crypto/x509"
 	"fmt"
 	"net"
 	"net/netip"
@@ -84,6 +85,18 @@ type Config struct {
 	Dialer      Dialer
 	DialTimeout time.Duration
 	Now         func() time.Time
+
+	// TLSMode selects prefer, require or none. The zero value is prefer.
+	TLSMode TLSMode
+	// TLSVerify decides only whether a verification failure aborts the Probe.
+	// The chain is captured and verified either way, per ADR-0004.
+	TLSVerify bool
+	// TLSServerName overrides the name verification matches against, which
+	// otherwise comes from the target.
+	TLSServerName string
+	// TLSRootCAs is the pool verification runs against, nil meaning the system
+	// roots. A test seeds it with the double's self-signed certificate.
+	TLSRootCAs *x509.CertPool
 }
 
 // Result is everything one Probe produced. Transcript is populated whenever
@@ -192,6 +205,42 @@ func Run(cfg Config) *Result {
 		}
 		tr.Append(transcript.KindNote, transcript.PhaseEHLO, nil).Note =
 			"advertised extensions: " + strings.Join(names, ", ")
+	}
+
+	switch {
+	case cfg.TLSMode == TLSNone:
+		tr.Append(transcript.KindNote, transcript.PhaseSTARTTLS, nil).Note =
+			"tls mode none, starttls not offered"
+
+	case advertisesSTARTTLS(res.Extensions):
+		var upgraded bool
+		conn, reader, upgraded = startTLS(tr, res, conn, reader, cfg)
+		if !upgraded {
+			return res
+		}
+		// The extension list from the plaintext EHLO cannot be trusted after an
+		// upgrade, and RFC 3207 requires the client re-issue EHLO.
+		ehloIdx = len(tr.Events)
+		reply, ok = ehlo(tr, res, conn, reader, cfg.Identities.HeloIdentity)
+		if !ok {
+			return res
+		}
+		recordDuration(tr, res, transcript.PhaseEHLO, tr.Events[len(tr.Events)-1], ehloIdx)
+		if !reply.IsPositive() {
+			res.Outcome = mustOutcome(transcript.PhaseEHLO, *reply)
+			return res
+		}
+		res.Extensions = transcript.ParseExtensions(reply.Lines)
+
+	case cfg.TLSMode == TLSRequire:
+		tr.Append(transcript.KindError, transcript.PhaseSTARTTLS, nil).Note =
+			"starttls required but not advertised"
+		res.Err = fmt.Errorf("smtpconv: starttls required but the target does not advertise it")
+		return res
+
+	default:
+		tr.Append(transcript.KindNote, transcript.PhaseSTARTTLS, nil).Note =
+			"starttls not advertised, continuing in plaintext"
 	}
 
 	mailFromIdx := len(tr.Events)

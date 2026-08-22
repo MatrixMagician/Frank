@@ -57,3 +57,9 @@ func generateCert() (tls.Certificate, *x509.Certificate, error) {
 
 	return tls.Certificate{Certificate: [][]byte{der}, PrivateKey: key, Leaf: leaf}, leaf, nil
 }
+
+// TestCertificate exposes the same in-process self-signed certificate the
+// server presents, for a test that needs its own TLS listener.
+func TestCertificate() (tls.Certificate, *x509.Certificate, error) {
+	return generateCert()
+}

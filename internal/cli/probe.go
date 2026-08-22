@@ -22,6 +22,9 @@ type probeFlags struct {
 	helo       string
 	headerFrom string
 	recipient  string
+	tlsMode    string
+	tlsVerify  bool
+	serverName string
 }
 
 func newProbeFlagSet(stderr io.Writer, pf *probeFlags) *flag.FlagSet {
@@ -32,6 +35,9 @@ func newProbeFlagSet(stderr io.Writer, pf *probeFlags) *flag.FlagSet {
 	fs.StringVar(&pf.helo, "helo", "", "EHLO/HELO identity")
 	fs.StringVar(&pf.headerFrom, "header-from", "", "Probe Message From: header address")
 	fs.StringVar(&pf.recipient, "recipient", "", "the single RCPT TO address")
+	fs.StringVar(&pf.tlsMode, "tls", "prefer", "starttls policy: prefer, require or none")
+	fs.BoolVar(&pf.tlsVerify, "tls-verify", false, "abort when certificate verification fails; the chain is captured and verified either way")
+	fs.StringVar(&pf.serverName, "tls-server-name", "", "name to verify the certificate against, defaulting to the target host")
 	return fs
 }
 
@@ -61,6 +67,12 @@ func probeCmd(opts *Options, args []string, stdout, stderr io.Writer) Code {
 		envelopeSender = smtpconv.NullEnvelopeSender()
 	}
 
+	tlsMode, err := smtpconv.ParseTLSMode(pf.tlsMode)
+	if err != nil {
+		fmt.Fprintf(stderr, "frank probe: %v\n", err)
+		return CodeUsage
+	}
+
 	dryRun := opts.DryRun || opts.ConfirmSend == ""
 
 	cfg := smtpconv.Config{
@@ -70,9 +82,12 @@ func probeCmd(opts *Options, args []string, stdout, stderr io.Writer) Code {
 			HeloIdentity:   pf.helo,
 			HeaderFrom:     pf.headerFrom,
 		},
-		Recipient:   smtpconv.Recipient(pf.recipient),
-		DryRun:      dryRun,
-		DialTimeout: dialTimeout,
+		Recipient:     smtpconv.Recipient(pf.recipient),
+		DryRun:        dryRun,
+		DialTimeout:   dialTimeout,
+		TLSMode:       tlsMode,
+		TLSVerify:     pf.tlsVerify,
+		TLSServerName: pf.serverName,
 	}
 
 	res := smtpconv.Run(cfg)

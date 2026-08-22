@@ -25,12 +25,12 @@ id	issue	acceptance_criterion	status
 4.7	4	Per-Phase timings are populated and monotonic	done
 4.8	4	A clean QUIT on every exit path, including error paths	done
 4.9	4	Exit codes are asserted by tests	done
-5.1	5	`require` aborts when STARTTLS is unavailable, `prefer` continues in plaintext, `none` never offers it	pending
-5.2	5	The chain, negotiated version and cipher are recorded identically whether verification passes or fails	pending
-5.3	5	A Probe against a self-signed certificate completes with `--tls-verify=false` and records the failure as a finding	pending
-5.4	5	The same Probe aborts with `--tls-verify=true`, and the chain is still in the Transcript	pending
-5.5	5	Session resumption is disabled, with a test proving the certificate is captured on every connection	pending
-5.6	5	The server name used for verification is set explicitly and recorded	pending
+5.1	5	`require` aborts when STARTTLS is unavailable, `prefer` continues in plaintext, `none` never offers it	done
+5.2	5	The chain, negotiated version and cipher are recorded identically whether verification passes or fails	done
+5.3	5	A Probe against a self-signed certificate completes with `--tls-verify=false` and records the failure as a finding	done
+5.4	5	The same Probe aborts with `--tls-verify=true`, and the chain is still in the Transcript	done
+5.5	5	Session resumption is disabled, with a test proving the certificate is captured on every connection	done
+5.6	5	The server name used for verification is set explicitly and recorded	done
 6.1	6	Without `--confirm-send`, a run walks to RCPT TO and stops, transmitting no Probe Message	pending
 6.2	6	`--confirm-send` requires a Recipient and the Recipient appears in the Transcript	pending
 6.3	6	`--confirm-send` together with `--dry-run` is a usage error	pending

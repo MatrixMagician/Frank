@@ -224,10 +224,31 @@ func (s *SourceAddress) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-// TLSDetails is a placeholder issue #5 fills in. It stays a nil-able pointer
-// on Transcript so an absent TLS negotiation renders as null/absent rather
-// than as a zero-valued struct that looks like a claim about a real session.
-type TLSDetails struct{}
+// TLSCertificate is one certificate as presented, captured rather than
+// trusted. Recording the chain is the point: per ADR-0004 the verification
+// result is a separate finding beside it, not something implied by whether the
+// Probe survived.
+type TLSCertificate struct {
+	Subject      string    `json:"subject"`
+	Issuer       string    `json:"issuer"`
+	NotBefore    time.Time `json:"not_before"`
+	NotAfter     time.Time `json:"not_after"`
+	DNSNames     []string  `json:"dns_names,omitempty"`
+	SerialNumber string    `json:"serial_number"`
+}
+
+// TLSDetails is what a completed STARTTLS negotiation established. It stays a
+// nil-able pointer on Transcript so an absent negotiation renders as absent
+// rather than as a zero-valued struct that looks like a claim about a real
+// session.
+type TLSDetails struct {
+	Version     string           `json:"version"`
+	Cipher      string           `json:"cipher"`
+	ServerName  string           `json:"server_name"`
+	Chain       []TLSCertificate `json:"chain"`
+	Verified    bool             `json:"verified"`
+	VerifyError string           `json:"verify_error,omitempty"`
+}
 
 type Transcript struct {
 	Start      time.Time
