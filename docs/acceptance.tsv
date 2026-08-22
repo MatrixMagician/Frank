@@ -4,12 +4,12 @@ id	issue	acceptance_criterion	status
 1.3	1	Global flags parse: `--config`, `--output`, `--json`, `--verbose`, `--dry-run`, `--rate`, `--confirm-send`, `--redact`	done
 1.4	1	CI runs vet and `go test -race` on push, and is green	done
 1.5	1	No third-party dependencies added	done
-2.1	2	A hand-constructed Transcript renders to both formats	pending
-2.2	2	Reply parsing covers multiline continuations and enhanced status codes	pending
-2.3	2	Every event carries both a monotonic and a wall-clock stamp, and they are monotonic in order	pending
-2.4	2	`--redact` accepts a repeatable RE2 pattern and masks matches in both renderings	pending
-2.5	2	The redaction code path is exercised by a test even when no pattern is supplied	pending
-2.6	2	The in-memory Transcript is unchanged by rendering	pending
+2.1	2	A hand-constructed Transcript renders to both formats	done
+2.2	2	Reply parsing covers multiline continuations and enhanced status codes	done
+2.3	2	Every event carries both a monotonic and a wall-clock stamp, and they are monotonic in order	done
+2.4	2	`--redact` accepts a repeatable RE2 pattern and masks matches in both renderings	done
+2.5	2	The redaction code path is exercised by a test even when no pattern is supplied	done
+2.6	2	The in-memory Transcript is unchanged by rendering	done
 3.1	3	Accepts or rejects at any Phase, with a caller-supplied code, enhanced status and text	pending
 3.2	3	Advertises a caller-supplied extension list in its EHLO response	pending
 3.3	3	Offers or refuses STARTTLS on demand, with a self-signed certificate for the TLS case	pending
