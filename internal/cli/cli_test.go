@@ -7,7 +7,7 @@ import (
 )
 
 func TestVerbsRouteAndReportNotImplemented(t *testing.T) {
-	for _, verb := range verbs {
+	for _, verb := range []string{"probe", "matrix", "explain"} {
 		t.Run(verb, func(t *testing.T) {
 			var stdout, stderr bytes.Buffer
 

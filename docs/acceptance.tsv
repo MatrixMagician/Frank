@@ -44,14 +44,14 @@ id	issue	acceptance_criterion	status
 7.4	7	Non-existent name and no-record-of-this-type are distinguishable to callers	done
 7.5	7	The real resolver is forced to the pure-Go implementation, with no CGO	done
 7.6	7	A test proves the suite makes no outbound DNS query	done
-8.1	8	Table-driven tests over zone fixtures cover nested includes, redirect, and each Verdict class	pending
-8.2	8	The Matched Mechanism is reported correctly for each case	pending
-8.3	8	Over-limit records are detected and reported as a finding	pending
-8.4	8	Addresses are normalised before matching, with a test for the IPv4-mapped case	pending
-8.5	8	Addresses carrying a zone are rejected rather than silently mismatched	pending
-8.6	8	Each `ip4` fixture case has an `ip6` twin	pending
-8.7	8	Without `--client-ip`, `auth` renders the tree and reports the Verdict as not evaluated	pending
-8.8	8	`auth` opens no TCP connection, proven by a test	pending
+8.1	8	Table-driven tests over zone fixtures cover nested includes, redirect, and each Verdict class	done
+8.2	8	The Matched Mechanism is reported correctly for each case	done
+8.3	8	Over-limit records are detected and reported as a finding	done
+8.4	8	Addresses are normalised before matching, with a test for the IPv4-mapped case	done
+8.5	8	Addresses carrying a zone are rejected rather than silently mismatched	done
+8.6	8	Each `ip4` fixture case has an `ip6` twin	done
+8.7	8	Without `--client-ip`, `auth` renders the tree and reports the Verdict as not evaluated	done
+8.8	8	`auth` opens no TCP connection, proven by a test	done
 9.1	9	Key records are parsed for version, key type, the public key and flags	pending
 9.2	9	Revoked, empty and test-mode keys are reported as faults	pending
 9.3	9	Discovery finds a seeded selector among decoys in the fixtures	pending

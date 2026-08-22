@@ -131,10 +131,6 @@ func runProbe(_ *Options, _ []string, _, stderr io.Writer) Code {
 	return notImplemented("probe", stderr)
 }
 
-func runAuth(_ *Options, _ []string, _, stderr io.Writer) Code {
-	return notImplemented("auth", stderr)
-}
-
 func runMatrix(_ *Options, _ []string, _, stderr io.Writer) Code {
 	return notImplemented("matrix", stderr)
 }
