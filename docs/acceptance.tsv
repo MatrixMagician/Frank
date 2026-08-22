@@ -16,15 +16,15 @@ id	issue	acceptance_criterion	status
 3.4	3	Rejects a specific Identity Triple and accepts the rest	done
 3.5	3	Can emit a Deferral first and an Acceptance on a later connection, so greylisting is testable	done
 3.6	3	Runs in-process on an ephemeral port and needs no fixtures on disk	done
-4.1	4	`--envelope-from`, `--helo` and `--header-from` are independent and any may differ from any other	pending
-4.2	4	A test asserts all three mismatched values appear verbatim in the Transcript at the correct Phases	pending
-4.3	4	EHLO falls back to HELO and the fallback is recorded	pending
-4.4	4	Exactly one Recipient per Probe, so every Phase has exactly one Outcome	pending
-4.5	4	Correct dot-stuffing and CRLF-dot-CRLF termination, covered by a test with a body line starting in a dot	pending
-4.6	4	The reply to the DATA verb and the reply to the terminating dot are recorded as separate Phases	pending
-4.7	4	Per-Phase timings are populated and monotonic	pending
-4.8	4	A clean QUIT on every exit path, including error paths	pending
-4.9	4	Exit codes are asserted by tests	pending
+4.1	4	`--envelope-from`, `--helo` and `--header-from` are independent and any may differ from any other	done
+4.2	4	A test asserts all three mismatched values appear verbatim in the Transcript at the correct Phases	done
+4.3	4	EHLO falls back to HELO and the fallback is recorded	done
+4.4	4	Exactly one Recipient per Probe, so every Phase has exactly one Outcome	done
+4.5	4	Correct dot-stuffing and CRLF-dot-CRLF termination, covered by a test with a body line starting in a dot	done
+4.6	4	The reply to the DATA verb and the reply to the terminating dot are recorded as separate Phases	done
+4.7	4	Per-Phase timings are populated and monotonic	done
+4.8	4	A clean QUIT on every exit path, including error paths	done
+4.9	4	Exit codes are asserted by tests	done
 5.1	5	`require` aborts when STARTTLS is unavailable, `prefer` continues in plaintext, `none` never offers it	pending
 5.2	5	The chain, negotiated version and cipher are recorded identically whether verification passes or fails	pending
 5.3	5	A Probe against a self-signed certificate completes with `--tls-verify=false` and records the failure as a finding	pending
@@ -52,17 +52,17 @@ id	issue	acceptance_criterion	status
 8.6	8	Each `ip4` fixture case has an `ip6` twin	done
 8.7	8	Without `--client-ip`, `auth` renders the tree and reports the Verdict as not evaluated	done
 8.8	8	`auth` opens no TCP connection, proven by a test	done
-9.1	9	Key records are parsed for version, key type, the public key and flags	pending
-9.2	9	Revoked, empty and test-mode keys are reported as faults	pending
-9.3	9	Discovery finds a seeded selector among decoys in the fixtures	pending
-9.4	9	`--selector` is repeatable and adds to the built-in list	pending
-9.5	9	The effective list probed appears in both renderings	pending
-9.6	9	Discovery query volume is bounded, and the bound is stated in the output	pending
-10.1	10	Policy, subdomain policy, both alignment modes, sampling rate and the reporting addresses are parsed	pending
-10.2	10	Alignment is computed for both SPF and DKIM, in relaxed and strict modes	pending
-10.3	10	Fixtures cover strict versus relaxed, subdomain policy, and a missing record resolving to none	pending
-10.4	10	The sampling rate is reported and never applied, with a test proving repeated runs agree	pending
-10.5	10	A null Envelope Sender moves the SPF subject to the HELO Identity, and the Verdict names which subject it evaluated	pending
+9.1	9	Key records are parsed for version, key type, the public key and flags	done
+9.2	9	Revoked, empty and test-mode keys are reported as faults	done
+9.3	9	Discovery finds a seeded selector among decoys in the fixtures	done
+9.4	9	`--selector` is repeatable and adds to the built-in list	done
+9.5	9	The effective list probed appears in both renderings	done
+9.6	9	Discovery query volume is bounded, and the bound is stated in the output	done
+10.1	10	Policy, subdomain policy, both alignment modes, sampling rate and the reporting addresses are parsed	done
+10.2	10	Alignment is computed for both SPF and DKIM, in relaxed and strict modes	done
+10.3	10	Fixtures cover strict versus relaxed, subdomain policy, and a missing record resolving to none	done
+10.4	10	The sampling rate is reported and never applied, with a test proving repeated runs agree	done
+10.5	10	A null Envelope Sender moves the SPF subject to the HELO Identity, and the Verdict names which subject it evaluated	done
 11.1	11	PLAIN and LOGIN both work against the test double	pending
 11.2	11	Authentication over a non-TLS connection is refused, with a test	pending
 11.3	11	Credentials are read from the environment and the config file, and never from a flag	pending

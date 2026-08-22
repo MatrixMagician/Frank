@@ -10,13 +10,15 @@ import (
 	"github.com/MatrixMagician/Frank/internal/version"
 )
 
-type redactList []string
+// repeatable is a flag.Value that accumulates every occurrence, for the flags
+// SPEC.md documents as repeatable: --redact and --selector.
+type repeatable []string
 
-func (r *redactList) String() string {
+func (r *repeatable) String() string {
 	return strings.Join(*r, ",")
 }
 
-func (r *redactList) Set(value string) error {
+func (r *repeatable) Set(value string) error {
 	*r = append(*r, value)
 	return nil
 }
@@ -30,6 +32,7 @@ type Options struct {
 	Rate        int
 	ConfirmSend string
 	Redact      []string
+	Selectors   []string
 	Version     bool
 	Help        bool
 	Explicit    map[string]bool
@@ -48,7 +51,8 @@ func newFlagSet(stderr io.Writer, opts *Options) *flag.FlagSet {
 	fs.BoolVar(&opts.DryRun, "dry-run", false, "stop before issuing DATA")
 	fs.IntVar(&opts.Rate, "rate", 0, "connections per minute")
 	fs.StringVar(&opts.ConfirmSend, "confirm-send", "", "recipient confirming a real send")
-	fs.Var((*redactList)(&opts.Redact), "redact", "regexp to redact from rendered output, repeatable")
+	fs.Var((*repeatable)(&opts.Redact), "redact", "regexp to redact from rendered output, repeatable")
+	fs.Var((*repeatable)(&opts.Selectors), "selector", "DKIM selector to probe in addition to the built-in list, repeatable")
 	fs.BoolVar(&opts.Version, "version", false, "print the version and exit")
 	fs.BoolVar(&opts.Help, "help", false, "print usage and exit")
 
@@ -108,7 +112,7 @@ func Main(args []string, stdout, stderr io.Writer) Code {
 
 	switch verb {
 	case "probe":
-		return runProbe(opts, verbArgs, stdout, stderr)
+		return probeCmd(opts, verbArgs, stdout, stderr)
 	case "auth":
 		return runAuth(opts, verbArgs, stdout, stderr)
 	case "matrix":
@@ -125,10 +129,6 @@ func Main(args []string, stdout, stderr io.Writer) Code {
 func notImplemented(verb string, stderr io.Writer) Code {
 	fmt.Fprintf(stderr, "frank %s: not implemented\n", verb)
 	return CodeUsage
-}
-
-func runProbe(_ *Options, _ []string, _, stderr io.Writer) Code {
-	return notImplemented("probe", stderr)
 }
 
 func runMatrix(_ *Options, _ []string, _, stderr io.Writer) Code {
