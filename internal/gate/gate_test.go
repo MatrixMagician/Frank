@@ -11,7 +11,7 @@ import (
 )
 
 func TestWithoutConfirmSendDispositionIsDryRun(t *testing.T) {
-	got, err := Decide(Input{Recipient: "rcpt@example.com"})
+	got, err := Decide(Input{Recipient: "rcpt@example.com", StdinIsTerminal: true})
 	if err != nil {
 		t.Fatalf("Decide: %v", err)
 	}
@@ -39,8 +39,8 @@ func TestConfirmSendRequiresMatchingRecipient(t *testing.T) {
 
 	t.Run("mismatched", func(t *testing.T) {
 		_, err := Decide(Input{ConfirmSend: "other@example.com", Recipient: "rcpt@example.com"})
-		if !errors.Is(err, ErrConfirmSendMismatch) {
-			t.Errorf("err = %v, want ErrConfirmSendMismatch", err)
+		if !errors.Is(err, ErrConfirmSendRecipientMismatch) {
+			t.Errorf("err = %v, want ErrConfirmSendRecipientMismatch", err)
 		}
 	})
 }
@@ -60,15 +60,15 @@ func TestConfirmSendWithDryRunIsUsageError(t *testing.T) {
 // The check lives in DecideInteractive, which every caller runs before dialing,
 // so the error arrives before the target has been touched.
 func TestConfirmationWithoutTTYIsAnErrorNotAPrompt(t *testing.T) {
-	_, err := DecideInteractive(Input{
+	_, err := Decide(Input{
 		Recipient:       "rcpt@example.com",
 		StdinIsTerminal: false,
 	})
-	if !errors.Is(err, ErrNoTerminal) {
-		t.Fatalf("err = %v, want ErrNoTerminal", err)
+	if !errors.Is(err, ErrConfirmationNeedsTerminal) {
+		t.Fatalf("err = %v, want ErrConfirmationNeedsTerminal", err)
 	}
 
-	if _, err := DecideInteractive(Input{
+	if _, err := Decide(Input{
 		Recipient:       "rcpt@example.com",
 		DryRunRequested: true,
 		StdinIsTerminal: false,
@@ -76,7 +76,7 @@ func TestConfirmationWithoutTTYIsAnErrorNotAPrompt(t *testing.T) {
 		t.Errorf("an explicit --dry-run with no terminal errored: %v", err)
 	}
 
-	if _, err := DecideInteractive(Input{
+	if _, err := Decide(Input{
 		ConfirmSend:     "rcpt@example.com",
 		Recipient:       "rcpt@example.com",
 		StdinIsTerminal: false,
@@ -90,7 +90,7 @@ func TestConfirmationWithoutTTYIsAnErrorNotAPrompt(t *testing.T) {
 func TestDefaultRateIsSixPerMinute(t *testing.T) {
 	started := time.Now()
 
-	clock := NewFakeClock()
+	clock := NewFakeClockAtEpoch()
 	lim, err := NewLimiter(nil, clock)
 	if err != nil {
 		t.Fatalf("NewLimiter: %v", err)
@@ -122,7 +122,7 @@ func TestDefaultRateIsSixPerMinute(t *testing.T) {
 
 func TestRateAboveDefaultIsRefused(t *testing.T) {
 	tooFast := DefaultRatePerMinute + 1
-	_, err := NewLimiter(&tooFast, NewFakeClock())
+	_, err := NewLimiter(&tooFast, NewFakeClockAtEpoch())
 	if !errors.Is(err, ErrRateTooHigh) {
 		t.Errorf("err = %v, want ErrRateTooHigh: the request is refused, not clamped", err)
 	}
@@ -130,7 +130,7 @@ func TestRateAboveDefaultIsRefused(t *testing.T) {
 
 func TestRateBelowDefaultIsAccepted(t *testing.T) {
 	slower := 2
-	lim, err := NewLimiter(&slower, NewFakeClock())
+	lim, err := NewLimiter(&slower, NewFakeClockAtEpoch())
 	if err != nil {
 		t.Fatalf("NewLimiter: %v", err)
 	}
@@ -146,7 +146,7 @@ func TestRateBelowDefaultIsAccepted(t *testing.T) {
 // code: an absent --rate takes the default, a --rate 0 is an explicit request
 // for no pacing.
 func TestRateZeroIsDistinguishableFromAbsent(t *testing.T) {
-	absent, err := NewLimiter(nil, NewFakeClock())
+	absent, err := NewLimiter(nil, NewFakeClockAtEpoch())
 	if err != nil {
 		t.Fatalf("NewLimiter(nil): %v", err)
 	}
@@ -155,7 +155,7 @@ func TestRateZeroIsDistinguishableFromAbsent(t *testing.T) {
 	}
 
 	zero := 0
-	explicit, err := NewLimiter(&zero, NewFakeClock())
+	explicit, err := NewLimiter(&zero, NewFakeClockAtEpoch())
 	if err != nil {
 		t.Fatalf("NewLimiter(&0): %v", err)
 	}
@@ -168,7 +168,7 @@ func TestRateZeroIsDistinguishableFromAbsent(t *testing.T) {
 }
 
 func TestDeferralBackoffIsExponential(t *testing.T) {
-	clock := NewFakeClock()
+	clock := NewFakeClockAtEpoch()
 	b := NewBackoff(BackoffConfig{Base: time.Second, Threshold: 5}, clock)
 
 	for range 4 {
@@ -190,7 +190,7 @@ func TestDeferralBackoffIsExponential(t *testing.T) {
 }
 
 func TestBackoffAbortsPastThreshold(t *testing.T) {
-	b := NewBackoff(BackoffConfig{Base: time.Second, Threshold: 3}, NewFakeClock())
+	b := NewBackoff(BackoffConfig{Base: time.Second, Threshold: 3}, NewFakeClockAtEpoch())
 
 	for i := range 2 {
 		if err := b.Deferred(context.Background()); err != nil {
@@ -204,7 +204,7 @@ func TestBackoffAbortsPastThreshold(t *testing.T) {
 }
 
 func TestSuccessResetsBackoff(t *testing.T) {
-	clock := NewFakeClock()
+	clock := NewFakeClockAtEpoch()
 	b := NewBackoff(BackoffConfig{Base: time.Second, Threshold: 4}, clock)
 
 	b.Deferred(context.Background())
@@ -246,7 +246,7 @@ func TestLimiterHonoursContextCancellation(t *testing.T) {
 }
 
 func TestLimiterIsRaceFree(t *testing.T) {
-	clock := NewFakeClock()
+	clock := NewFakeClockAtEpoch()
 	lim, err := NewLimiter(nil, clock)
 	if err != nil {
 		t.Fatalf("NewLimiter: %v", err)

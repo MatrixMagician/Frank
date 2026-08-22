@@ -77,7 +77,7 @@ func probeCmd(opts *Options, args []string, stdout, stderr io.Writer) Code {
 
 	// The gate runs before anything is dialed, so a run that would have to
 	// prompt with no terminal errors before the target is touched.
-	decision, err := gate.DecideInteractive(gate.Input{
+	decision, err := gate.Decide(gate.Input{
 		DryRunRequested: opts.DryRun,
 		ConfirmSend:     opts.ConfirmSend,
 		Recipient:       pf.recipient,

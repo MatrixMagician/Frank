@@ -116,7 +116,7 @@ func Main(args []string, stdout, stderr io.Writer) Code {
 	case "auth":
 		return runAuth(opts, verbArgs, stdout, stderr)
 	case "matrix":
-		return runMatrix(opts, verbArgs, stdout, stderr)
+		return matrixCmd(opts, verbArgs, stdout, stderr)
 	case "explain":
 		return runExplain(opts, verbArgs, stdout, stderr)
 	default:
@@ -129,10 +129,6 @@ func Main(args []string, stdout, stderr io.Writer) Code {
 func notImplemented(verb string, stderr io.Writer) Code {
 	fmt.Fprintf(stderr, "frank %s: not implemented\n", verb)
 	return CodeUsage
-}
-
-func runMatrix(_ *Options, _ []string, _, stderr io.Writer) Code {
-	return notImplemented("matrix", stderr)
 }
 
 func runExplain(_ *Options, _ []string, _, stderr io.Writer) Code {
