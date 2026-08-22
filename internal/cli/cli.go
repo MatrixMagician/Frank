@@ -7,8 +7,22 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/MatrixMagician/Frank/internal/report"
 	"github.com/MatrixMagician/Frank/internal/version"
 )
+
+// applyConfig fills in every global setting the operator did not give
+// explicitly. An explicit flag always wins, which is why this consults the
+// Explicit set rather than checking for a zero value.
+func applyConfig(opts *Options, cfg *report.Config) {
+	opts.Output = report.StringOr(opts.Explicit["output"], opts.Output, cfg.Output)
+	if !opts.Explicit["rate"] && cfg.Rate != nil {
+		opts.Rate = *cfg.Rate
+		opts.Explicit["rate"] = true
+	}
+	opts.Redact = report.StringsOr(opts.Redact, cfg.Redact)
+	opts.Selectors = report.StringsOr(opts.Selectors, cfg.Selectors)
+}
 
 // repeatable is a flag.Value that accumulates every occurrence, for the flags
 // SPEC.md documents as repeatable: --redact and --selector.
@@ -34,8 +48,11 @@ type Options struct {
 	Redact      []string
 	Selectors   []string
 	Version     bool
-	Help        bool
-	Explicit    map[string]bool
+	// File is the decoded config, kept so a verb can read the settings that
+	// have no global flag of their own.
+	File     *report.Config
+	Help     bool
+	Explicit map[string]bool
 }
 
 var verbs = []string{"probe", "auth", "matrix", "explain"}
@@ -101,6 +118,16 @@ func Main(args []string, stdout, stderr io.Writer) Code {
 	if opts.Version {
 		fmt.Fprintln(stdout, version.Version)
 		return CodeAcceptance
+	}
+
+	if opts.Config != "" {
+		cfg, err := report.Load(opts.Config)
+		if err != nil {
+			fmt.Fprintf(stderr, "frank: %v\n", err)
+			return CodeUsage
+		}
+		opts.File = cfg
+		applyConfig(opts, cfg)
 	}
 
 	if len(rest) == 0 {

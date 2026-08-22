@@ -10,7 +10,10 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/MatrixMagician/Frank/internal/explain"
 	"github.com/MatrixMagician/Frank/internal/gate"
+	"github.com/MatrixMagician/Frank/internal/report"
+	"github.com/MatrixMagician/Frank/internal/resolve"
 	"github.com/MatrixMagician/Frank/internal/smtpconv"
 	"github.com/MatrixMagician/Frank/internal/transcript"
 )
@@ -122,7 +125,7 @@ func probeCmd(opts *Options, args []string, stdout, stderr io.Writer) Code {
 
 	// ADR-0007: credentials come from the environment or the config file and
 	// never from a flag, because argv is world-readable through /proc.
-	creds, _ := smtpconv.CredentialsFromEnv()
+	creds := credentials(opts)
 	cfg.Credentials = creds
 
 	res := smtpconv.Run(cfg)
@@ -139,7 +142,24 @@ func probeCmd(opts *Options, args []string, stdout, stderr io.Writer) Code {
 	smtpconv.RegisterCredentials(redactor, creds)
 
 	if res.Transcript != nil {
-		if err := writeReports(opts.Output, res.Transcript, redactor); err != nil {
+		// The report carries the Verdicts as well as the Outcomes, so a reader
+		// gets the same synthesis `frank explain` would give without having to
+		// run a second command against the file they were just handed.
+		in := explain.Input{Transcript: res.Transcript}
+		if err := populateVerdicts(context.Background(), &in, res.Transcript, explainFlags{}, resolve.NewSystem()); err != nil {
+			fmt.Fprintf(stderr, "frank probe: %v\n", err)
+		}
+		diagnosis := explain.Diagnose(in)
+		rep := &report.Report{
+			GeneratedAt: time.Now().UTC(),
+			Command:     "frank probe --target " + target,
+			Transcript:  res.Transcript,
+			Redactor:    redactor,
+			SPF:         in.SPF,
+			DMARC:       in.DMARC,
+			Diagnosis:   &diagnosis,
+		}
+		if err := writeReports(opts.Output, res.Transcript, redactor, rep); err != nil {
 			fmt.Fprintf(stderr, "frank probe: %v\n", err)
 		}
 		if opts.JSON {
@@ -192,7 +212,27 @@ func mapResultToCode(res *smtpconv.Result) Code {
 // writeReports writes both the human-readable log and the JSON document to
 // dir (or a default UTC-timestamped directory), per SPEC.md's "--output":
 // both artefacts are always written, regardless of --json.
-func writeReports(dir string, tr *transcript.Transcript, r *transcript.Redactor) error {
+// credentials reads SMTP AUTH credentials from the environment, falling back
+// to the config file. Never from a flag: argv is world-readable through /proc
+// and lands verbatim in shell history. See ADR-0007.
+func credentials(opts *Options) smtpconv.Credentials {
+	if creds, ok := smtpconv.CredentialsFromEnv(); ok {
+		return creds
+	}
+	if opts.File == nil {
+		return smtpconv.Credentials{}
+	}
+	var creds smtpconv.Credentials
+	if opts.File.Username != nil {
+		creds.Username = *opts.File.Username
+	}
+	if opts.File.Password != nil {
+		creds.Password = *opts.File.Password
+	}
+	return creds
+}
+
+func writeReports(dir string, tr *transcript.Transcript, r *transcript.Redactor, rep *report.Report) error {
 	if dir == "" {
 		dir = "frank-" + time.Now().UTC().Format("20060102T150405Z")
 	}
@@ -216,6 +256,14 @@ func writeReports(dir string, tr *transcript.Transcript, r *transcript.Redactor)
 	defer jsonFile.Close()
 	if err := transcript.RenderJSON(jsonFile, tr, r); err != nil {
 		return fmt.Errorf("render transcript.json: %w", err)
+	}
+
+	// Both renderings of the combined report always land here too. --json
+	// changes only what reaches standard output, never what is written.
+	if rep != nil {
+		if _, _, err := rep.Write(dir); err != nil {
+			return fmt.Errorf("write report: %w", err)
+		}
 	}
 
 	return nil

@@ -81,10 +81,10 @@ id	issue	acceptance_criterion	status
 13.4	13	A matrix Transcript produces a run-level Diagnosis plus a per-Cell line	done
 13.5	13	Unreadable input exits with the usage code	done
 13.6	13	No Diagnosis ever claims a message was delivered	done
-14.1	14	One report combines Transcript, Verdicts, matrix and Diagnosis in both formats	pending
-14.2	14	Both renderings are always written to the output directory, defaulting to a timestamped one	pending
-14.3	14	The JSON flag changes only what standard output carries	pending
-14.4	14	A mistyped config key is an error naming the key	pending
-14.5	14	A key set to zero is distinguishable from an absent key, with tests for the rate and verification cases	pending
-14.6	14	Explicit flags beat config values	pending
-14.7	14	An end-to-end run against the test double yields a report that needs no source reading, and exit codes are asserted	pending
+14.1	14	One report combines Transcript, Verdicts, matrix and Diagnosis in both formats	done
+14.2	14	Both renderings are always written to the output directory, defaulting to a timestamped one	done
+14.3	14	The JSON flag changes only what standard output carries	done
+14.4	14	A mistyped config key is an error naming the key	done
+14.5	14	A key set to zero is distinguishable from an absent key, with tests for the rate and verification cases	done
+14.6	14	Explicit flags beat config values	done
+14.7	14	An end-to-end run against the test double yields a report that needs no source reading, and exit codes are asserted	done
