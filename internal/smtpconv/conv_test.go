@@ -228,6 +228,14 @@ func TestDotStuffingAndTermination(t *testing.T) {
 	if len(received) != 1 {
 		t.Fatalf("Received() = %d, want 1", len(received))
 	}
+
+	// The Probe Message carries a line beginning with a dot precisely so this
+	// path is exercised. The client must double it on the wire and the server
+	// must undo that, so what the server records is the original line.
+	const dotted = ".This line begins with a dot"
+	if !strings.Contains(received[0].Data, "\r\n"+dotted) {
+		t.Errorf("the server did not observe the dot-prefixed line intact:\n%q", received[0].Data)
+	}
 	if strings.Contains(received[0].Data, "\r\n..") {
 		t.Errorf("server-observed body still contains a stuffed dot, want it undone on receipt:\n%q", received[0].Data)
 	}

@@ -74,12 +74,14 @@ func startTLS(tr *transcript.Transcript, res *Result, conn net.Conn, reader *buf
 	}
 
 	var presented []*x509.Certificate
+	sessionTicketsDisabled := true
+
 	tconn := tls.Client(conn, &tls.Config{
 		ServerName:         serverName,
 		InsecureSkipVerify: true,
 		// VerifyPeerCertificate is not invoked on a resumed connection, so a
 		// resumption would produce a Transcript with no certificate in it.
-		SessionTicketsDisabled: true,
+		SessionTicketsDisabled: sessionTicketsDisabled,
 		VerifyPeerCertificate: func(raw [][]byte, _ [][]*x509.Certificate) error {
 			for _, der := range raw {
 				cert, err := x509.ParseCertificate(der)
@@ -101,10 +103,11 @@ func startTLS(tr *transcript.Transcript, res *Result, conn net.Conn, reader *buf
 
 	state := tconn.ConnectionState()
 	details := &transcript.TLSDetails{
-		Version:    tls.VersionName(state.Version),
-		Cipher:     tls.CipherSuiteName(state.CipherSuite),
-		ServerName: serverName,
-		Chain:      describeChain(presented),
+		ResumptionDisabled: sessionTicketsDisabled,
+		Version:            tls.VersionName(state.Version),
+		Cipher:             tls.CipherSuiteName(state.CipherSuite),
+		ServerName:         serverName,
+		Chain:              describeChain(presented),
 	}
 
 	verifyErr := verifyChain(presented, serverName, cfg.TLSRootCAs)

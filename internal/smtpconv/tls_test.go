@@ -347,3 +347,22 @@ func noteContains(tr *transcript.Transcript, want string) bool {
 	}
 	return false
 }
+
+// TestStartTLSDisablesSessionResumption checks the production path, not just
+// Go's behaviour. TestResumedSessionSkipsCertificateCapture shows why the
+// setting matters; this shows startTLS actually applies it, so removing the
+// line fails here rather than silently producing certificate-free transcripts.
+func TestStartTLSDisablesSessionResumption(t *testing.T) {
+	srv := smtptest.Start(t, smtptest.WithSTARTTLS())
+
+	res := tlsProbe(t, srv, TLSPrefer, false, nil)
+	if res.Err != nil {
+		t.Fatalf("probe failed: %v", res.Err)
+	}
+	if res.Transcript.TLS == nil {
+		t.Fatal("TLS details are nil")
+	}
+	if !res.Transcript.TLS.ResumptionDisabled {
+		t.Error("the probe negotiated TLS without disabling session resumption, so a resumed connection would capture no certificate")
+	}
+}

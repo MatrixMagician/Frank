@@ -242,12 +242,16 @@ type TLSCertificate struct {
 // rather than as a zero-valued struct that looks like a claim about a real
 // session.
 type TLSDetails struct {
-	Version     string           `json:"version"`
-	Cipher      string           `json:"cipher"`
-	ServerName  string           `json:"server_name"`
-	Chain       []TLSCertificate `json:"chain"`
-	Verified    bool             `json:"verified"`
-	VerifyError string           `json:"verify_error,omitempty"`
+	Version    string           `json:"version"`
+	Cipher     string           `json:"cipher"`
+	ServerName string           `json:"server_name"`
+	Chain      []TLSCertificate `json:"chain"`
+	Verified   bool             `json:"verified"`
+	// ResumptionDisabled records that the handshake refused session tickets.
+	// ADR-0004 depends on it: VerifyPeerCertificate is not invoked on a resumed
+	// connection, so a resumption would leave no certificate in the Transcript.
+	ResumptionDisabled bool   `json:"resumption_disabled"`
+	VerifyError        string `json:"verify_error,omitempty"`
 }
 
 type Transcript struct {

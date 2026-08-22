@@ -61,27 +61,48 @@ func TestAuthWithoutClientIPReportsNotEvaluated(t *testing.T) {
 // TestAuthOpensNoTCPConnection installs a dialer that records any attempt and
 // asserts none was made. `auth` reads DNS and nothing else, which is why it
 // has no observed Source Address to default the Candidate Sending IP to.
+// TestAuthOpensNoTCPConnection stands a real SMTP listener up and asserts auth
+// never touches it. Counting dials through an injected resolver would be
+// circular: a fixture resolver cannot dial by construction, so such a test
+// passes however auth behaves. This one would catch auth growing a probe.
 func TestAuthOpensNoTCPConnection(t *testing.T) {
-	var dials atomic.Int64
-	original := net.DefaultResolver.Dial
-	net.DefaultResolver.Dial = func(ctx context.Context, network, address string) (net.Conn, error) {
-		dials.Add(1)
-		return nil, net.ErrClosed
+	var accepted atomic.Int64
+
+	ln, err := net.Listen("tcp", "127.0.0.1:0")
+	if err != nil {
+		t.Fatalf("listen: %v", err)
 	}
-	t.Cleanup(func() { net.DefaultResolver.Dial = original })
+	t.Cleanup(func() { ln.Close() })
+	go func() {
+		for {
+			conn, err := ln.Accept()
+			if err != nil {
+				return
+			}
+			accepted.Add(1)
+			conn.Close()
+		}
+	}()
 
 	z := resolve.NewZone()
 	z.TXT("example.com", "v=spf1 ip4:192.0.2.0/24 -all")
+	z.MX("example.com", 10, ln.Addr().String())
+	z.A("example.com", "127.0.0.1")
 
 	var stdout, stderr bytes.Buffer
-	runAuthWith(context.Background(), &Options{}, authOptions{
+	code := runAuthWith(context.Background(), &Options{}, authOptions{
 		envelopeFrom: "a@example.com",
+		helo:         ln.Addr().String(),
+		headerFrom:   "a@example.com",
 		clientIP:     "192.0.2.7",
 		resolver:     z,
 	}, &stdout, &stderr)
 
-	if got := dials.Load(); got != 0 {
-		t.Errorf("auth made %d outbound dials, want 0", got)
+	if code != CodeAcceptance {
+		t.Fatalf("code = %v, want %v (stderr: %s)", code, CodeAcceptance, stderr.String())
+	}
+	if got := accepted.Load(); got != 0 {
+		t.Errorf("auth opened %d tcp connections to the listener, want 0", got)
 	}
 }
 

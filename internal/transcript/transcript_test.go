@@ -96,6 +96,12 @@ func TestEveryEventCarriesBothClocksAndOrderIsMonotonic(t *testing.T) {
 		if e.Wall.IsZero() {
 			t.Errorf("Events[%d].Wall is zero", i)
 		}
+		// A stamp left at zero is still non-decreasing, so the ordering check
+		// below passes for a transcript that records no elapsed time at all.
+		// The first event legitimately sits near zero; later ones must not.
+		if i > 0 && e.Monotonic == 0 {
+			t.Errorf("Events[%d].Monotonic is zero, so the monotonic clock was never stamped", i)
+		}
 		if i > 0 && e.Monotonic < tr.Events[i-1].Monotonic {
 			t.Errorf("Events[%d].Monotonic = %v < Events[%d].Monotonic = %v, want non-decreasing",
 				i, e.Monotonic, i-1, tr.Events[i-1].Monotonic)

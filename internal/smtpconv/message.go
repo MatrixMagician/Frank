@@ -62,6 +62,10 @@ func (m ProbeMessage) Render() string {
 	b.WriteString("\r\n")
 	b.WriteString("This message is a Frank deliverability probe.\r\n")
 	b.WriteString("It is a diagnostic instrument, not a real communication, and requires no action.\r\n")
+	// A line beginning with a dot, so every real Probe exercises dot-stuffing
+	// rather than leaving it to a unit test on DotStuff alone. A host that
+	// mishandles it corrupts this line, which is visible in the Transcript.
+	b.WriteString(".This line begins with a dot, which the protocol requires be doubled in transit.\r\n")
 	return b.String()
 }
 
