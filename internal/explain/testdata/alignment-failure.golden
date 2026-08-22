@@ -1,0 +1,8 @@
+diagnosis: the rejection is consistent with a DMARC alignment failure rather than a connection or TLS fault: the header From domain is victim.example, DMARC for it is p=reject, and neither identifier authenticated and aligned
+confidence: supported
+evidence:
+  - observed: the target replied 550 5.7.1 at end-of-data: Unauthenticated email from victim.example is not accepted
+  - computed: DMARC for victim.example publishes p=reject with aspf=strict and adkim=strict
+  - computed: SPF alignment: authenticated "sender.example" against header from "victim.example", relaxed=false strict=false
+  - computed: DKIM alignment: authenticated "" against header from "victim.example", relaxed=false strict=false
+  - computed: SPF for sender.example evaluated to pass

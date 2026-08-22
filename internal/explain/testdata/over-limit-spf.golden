@@ -1,0 +1,7 @@
+diagnosis: the target refused the message, and the sender's SPF record exceeds the RFC 7208 lookup limit, which makes it a permerror for every receiver and is a root cause in its own right
+confidence: supported
+evidence:
+  - observed: the target replied 550 5.7.23 at end-of-data: SPF validation failed
+  - computed: the SPF record for sender.example uses 10 dns-querying mechanisms against a limit of 10
+  - computed: an over-limit record evaluates to permerror regardless of the sending ip
+next probe: flatten the SPF record below the limit and probe the same identity triple again

@@ -92,11 +92,12 @@ func probeCmd(opts *Options, args []string, stdout, stderr io.Writer) Code {
 	if opts.Explicit["rate"] {
 		ratePtr = &opts.Rate
 	}
-	limiter, err := gate.NewLimiter(ratePtr, gate.RealClock{})
+	rate, err := gate.ResolveRate(ratePtr)
 	if err != nil {
 		fmt.Fprintf(stderr, "frank probe: %v\n", err)
 		return CodeUsage
 	}
+	limiter := gate.NewLimiter(rate, gate.RealClock{})
 	if err := limiter.Wait(context.Background()); err != nil {
 		fmt.Fprintf(stderr, "frank probe: %v\n", err)
 		return CodeIncomplete

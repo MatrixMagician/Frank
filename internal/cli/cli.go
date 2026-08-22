@@ -118,7 +118,7 @@ func Main(args []string, stdout, stderr io.Writer) Code {
 	case "matrix":
 		return matrixCmd(opts, verbArgs, stdout, stderr)
 	case "explain":
-		return runExplain(opts, verbArgs, stdout, stderr)
+		return explainCmd(opts, verbArgs, stdout, stderr)
 	default:
 		fmt.Fprintf(stderr, "frank: unknown verb %q\n", verb)
 		usage(stderr)
@@ -129,8 +129,4 @@ func Main(args []string, stdout, stderr io.Writer) Code {
 func notImplemented(verb string, stderr io.Writer) Code {
 	fmt.Fprintf(stderr, "frank %s: not implemented\n", verb)
 	return CodeUsage
-}
-
-func runExplain(_ *Options, _ []string, _, stderr io.Writer) Code {
-	return notImplemented("explain", stderr)
 }

@@ -1,0 +1,6 @@
+diagnosis: the target deferred rather than deciding, so this proves nothing about the identity triple that met it
+confidence: ambiguous
+evidence:
+  - observed: the target replied 450 4.7.1 at end-of-data: Greylisted, please try again in 300 seconds
+  - observed: a 4xx is a deferral, meaning greylisting, rate limiting or temporary unavailability, and is not a rejection
+next probe: probe the same identity triple again after the greylisting interval; a host that defers indefinitely needs a different recipient or target

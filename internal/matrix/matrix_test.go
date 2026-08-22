@@ -25,10 +25,7 @@ func testSlots() Slots {
 func instantLimiter(t *testing.T) (*gate.Limiter, *gate.Backoff) {
 	t.Helper()
 	clock := gate.NewFakeClockAtEpoch()
-	lim, err := gate.NewLimiter(nil, clock)
-	if err != nil {
-		t.Fatalf("NewLimiter: %v", err)
-	}
+	lim := gate.NewLimiter(gate.DefaultRatePerMinute, clock)
 	return lim, gate.NewBackoff(gate.BackoffConfig{Base: time.Millisecond, Threshold: 3}, clock)
 }
 
@@ -146,10 +143,7 @@ func TestAbortedSweepLeavesUnrunCellsRenderedDistinctly(t *testing.T) {
 		450, "4.7.1", "greylisted, try again later"))
 
 	clock := gate.NewFakeClockAtEpoch()
-	lim, err := gate.NewLimiter(nil, clock)
-	if err != nil {
-		t.Fatalf("NewLimiter: %v", err)
-	}
+	lim := gate.NewLimiter(gate.DefaultRatePerMinute, clock)
 	m, err := Run(context.Background(), Config{
 		TargetHost: srv.Addr(),
 		Recipient:  "rcpt@target.example",
@@ -191,16 +185,17 @@ func TestAbortedSweepLeavesUnrunCellsRenderedDistinctly(t *testing.T) {
 
 func TestRateHonouredAndCannotBeRaised(t *testing.T) {
 	tooFast := gate.DefaultRatePerMinute + 1
-	if _, err := gate.NewLimiter(&tooFast, gate.NewFakeClockAtEpoch()); err == nil {
+	if _, err := gate.ResolveRate(&tooFast); err == nil {
 		t.Error("a rate above the default was accepted, but matrix may only lower it")
 	}
 
 	clock := gate.NewFakeClockAtEpoch()
 	slower := 2
-	lim, err := gate.NewLimiter(&slower, clock)
+	rate, err := gate.ResolveRate(&slower)
 	if err != nil {
-		t.Fatalf("NewLimiter: %v", err)
+		t.Fatalf("ResolveRate: %v", err)
 	}
+	lim := gate.NewLimiter(rate, clock)
 
 	srv := smtptest.Start(t)
 	if _, err := Run(context.Background(), Config{
@@ -298,12 +293,8 @@ func TestConcurrentSweepIsRaceFree(t *testing.T) {
 		go func() {
 			defer wg.Done()
 			clock := gate.NewFakeClockAtEpoch()
-			lim, err := gate.NewLimiter(nil, clock)
-			if err != nil {
-				t.Errorf("NewLimiter: %v", err)
-				return
-			}
-			_, err = Run(context.Background(), Config{
+			lim := gate.NewLimiter(gate.DefaultRatePerMinute, clock)
+			_, err := Run(context.Background(), Config{
 				TargetHost: srv.Addr(),
 				Recipient:  "rcpt@target.example",
 				Slots:      testSlots(),

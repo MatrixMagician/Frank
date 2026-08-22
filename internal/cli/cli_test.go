@@ -6,23 +6,6 @@ import (
 	"testing"
 )
 
-func TestVerbsRouteAndReportNotImplemented(t *testing.T) {
-	for _, verb := range []string{"explain"} {
-		t.Run(verb, func(t *testing.T) {
-			var stdout, stderr bytes.Buffer
-
-			got := Main([]string{verb}, &stdout, &stderr)
-
-			if got != CodeUsage {
-				t.Errorf("Main(%q) code = %v, want %v", verb, got, CodeUsage)
-			}
-			if !strings.Contains(stderr.String(), "not implemented") {
-				t.Errorf("Main(%q) stderr = %q, want a not-implemented notice", verb, stderr.String())
-			}
-		})
-	}
-}
-
 func TestVersionFlagPrintsVersionAndReturnsZero(t *testing.T) {
 	var stdout, stderr bytes.Buffer
 

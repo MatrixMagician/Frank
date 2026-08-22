@@ -19,9 +19,8 @@ func (stubTB) Cleanup(func())            {}
 func main() {
 	srv := smtptest.Start(stubTB{},
 		smtptest.WithExtensions("SIZE 10240000", "8BITMIME", "ENHANCEDSTATUSCODES"),
-		smtptest.RejectTriple(smtptest.PhaseEndOfData,
-			smtptest.Triple{HeaderFrom: "ceo@victim.example"},
-			550, "5.7.1", "sender address not owned by authenticated user"),
+		smtptest.Reject(smtptest.PhaseEndOfData, 550, "5.7.1",
+			"Unauthenticated email from github.com is not accepted due to domain's DMARC policy"),
 	)
 	fmt.Println(srv.Addr())
 	c := make(chan os.Signal, 1)

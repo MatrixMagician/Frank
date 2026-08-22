@@ -1,0 +1,5 @@
+diagnosis: the probe stopped at STARTTLS, so this is a transport fault rather than a policy decision about the identities
+confidence: supported
+evidence:
+  - observed: STARTTLS was attempted and no TLS session was established
+next probe: probe again with --tls=none to see whether the target accepts the identities in plaintext

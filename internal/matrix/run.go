@@ -51,11 +51,7 @@ func Run(ctx context.Context, cfg Config) (*Matrix, error) {
 	}
 	limiter := cfg.Limiter
 	if limiter == nil {
-		var err error
-		limiter, err = gate.NewLimiter(nil, gate.RealClock{})
-		if err != nil {
-			return nil, err
-		}
+		limiter = gate.NewLimiter(gate.DefaultRatePerMinute, gate.RealClock{})
 	}
 	backoff := cfg.Backoff
 	if backoff == nil {
@@ -95,13 +91,13 @@ func Run(ctx context.Context, cfg Config) (*Matrix, error) {
 				break
 			}
 			if res.Outcome.IsDeferral() {
-				if err := backoff.Deferred(ctx); err != nil {
+				if err := backoff.Defer(ctx); err != nil {
 					m.Aborted = err.Error()
 					return m, nil
 				}
 				continue
 			}
-			backoff.Succeeded()
+			backoff.Reset()
 			break
 		}
 	}
