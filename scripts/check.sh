@@ -22,6 +22,8 @@ step "static binary" bash -c 'CGO_ENABLED=0 go build -o /tmp/frank-predicate . &
 step "no dependencies" bash -c '[ ! -s go.sum ]'
 step "tests (race)" env CGO_ENABLED=1 go test -race ./...
 
+step "ledger references resolve" ./scripts/verify-ledger.sh
+
 echo
 pending=$(awk -F'\t' 'NR>1 && $4!="done"' docs/acceptance.tsv | wc -l)
 total=$(($(wc -l < docs/acceptance.tsv) - 1))

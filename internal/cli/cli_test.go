@@ -196,3 +196,38 @@ func TestCodeString(t *testing.T) {
 		}
 	}
 }
+
+// TestEveryVerbRoutesToItsOwnHandler is criterion 1.2 now that no verb is
+// stubbed: each verb must reach its own command and report on its own terms.
+// A verb that fell through to the default branch would say "unknown verb".
+func TestEveryVerbRoutesToItsOwnHandler(t *testing.T) {
+	// Each verb, given no flags, refuses with a message only that verb emits.
+	want := map[string]string{
+		"probe":   "--target",
+		"auth":    "--envelope-from",
+		"matrix":  "--target",
+		"explain": "transcript",
+	}
+
+	for _, verb := range verbs {
+		t.Run(verb, func(t *testing.T) {
+			var stdout, stderr bytes.Buffer
+
+			got := Main([]string{verb}, &stdout, &stderr)
+
+			if got != CodeUsage {
+				t.Errorf("code = %v, want %v for a verb given no flags", got, CodeUsage)
+			}
+			out := stderr.String()
+			if strings.Contains(out, "unknown verb") {
+				t.Fatalf("%q fell through to the default branch: %s", verb, out)
+			}
+			if !strings.Contains(out, "frank "+verb) {
+				t.Errorf("stderr = %q, want it to name the verb that refused", out)
+			}
+			if !strings.Contains(out, want[verb]) {
+				t.Errorf("stderr = %q, want %q from %s's own handler", out, want[verb], verb)
+			}
+		})
+	}
+}

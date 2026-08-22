@@ -1,90 +1,90 @@
-id	issue	acceptance_criterion	status
-1.1	1	`go build` produces a `frank` binary with no CGO	done
-1.2	1	All four verbs are routed; unimplemented ones exit with the usage/config code	done
-1.3	1	Global flags parse: `--config`, `--output`, `--json`, `--verbose`, `--dry-run`, `--rate`, `--confirm-send`, `--redact`	done
-1.4	1	CI runs vet and `go test -race` on push, and is green	done
-1.5	1	No third-party dependencies added	done
-2.1	2	A hand-constructed Transcript renders to both formats	done
-2.2	2	Reply parsing covers multiline continuations and enhanced status codes	done
-2.3	2	Every event carries both a monotonic and a wall-clock stamp, and they are monotonic in order	done
-2.4	2	`--redact` accepts a repeatable RE2 pattern and masks matches in both renderings	done
-2.5	2	The redaction code path is exercised by a test even when no pattern is supplied	done
-2.6	2	The in-memory Transcript is unchanged by rendering	done
-3.1	3	Accepts or rejects at any Phase, with a caller-supplied code, enhanced status and text	done
-3.2	3	Advertises a caller-supplied extension list in its EHLO response	done
-3.3	3	Offers or refuses STARTTLS on demand, with a self-signed certificate for the TLS case	done
-3.4	3	Rejects a specific Identity Triple and accepts the rest	done
-3.5	3	Can emit a Deferral first and an Acceptance on a later connection, so greylisting is testable	done
-3.6	3	Runs in-process on an ephemeral port and needs no fixtures on disk	done
-4.1	4	`--envelope-from`, `--helo` and `--header-from` are independent and any may differ from any other	done
-4.2	4	A test asserts all three mismatched values appear verbatim in the Transcript at the correct Phases	done
-4.3	4	EHLO falls back to HELO and the fallback is recorded	done
-4.4	4	Exactly one Recipient per Probe, so every Phase has exactly one Outcome	done
-4.5	4	Correct dot-stuffing and CRLF-dot-CRLF termination, covered by a test with a body line starting in a dot	done
-4.6	4	The reply to the DATA verb and the reply to the terminating dot are recorded as separate Phases	done
-4.7	4	Per-Phase timings are populated and monotonic	done
-4.8	4	A clean QUIT on every exit path, including error paths	done
-4.9	4	Exit codes are asserted by tests	done
-5.1	5	`require` aborts when STARTTLS is unavailable, `prefer` continues in plaintext, `none` never offers it	done
-5.2	5	The chain, negotiated version and cipher are recorded identically whether verification passes or fails	done
-5.3	5	A Probe against a self-signed certificate completes with `--tls-verify=false` and records the failure as a finding	done
-5.4	5	The same Probe aborts with `--tls-verify=true`, and the chain is still in the Transcript	done
-5.5	5	Session resumption is disabled, with a test proving the certificate is captured on every connection	done
-5.6	5	The server name used for verification is set explicitly and recorded	done
-6.1	6	Without `--confirm-send`, a run walks to RCPT TO and stops, transmitting no Probe Message	done
-6.2	6	`--confirm-send` requires a Recipient and the Recipient appears in the Transcript	done
-6.3	6	`--confirm-send` together with `--dry-run` is a usage error	done
-6.4	6	A run needing confirmation with no TTY errors before the first dial, proven by a test	done
-6.5	6	The rate limiter defaults to 6 per minute and is asserted by a timing test	done
-6.6	6	An attempt to raise the rate above the default is refused	done
-6.7	6	Repeated Deferrals back off exponentially and abort past a threshold	done
-7.1	7	An interface covering TXT, A/AAAA, MX, PTR and NS that the standard resolver satisfies	done
-7.2	7	A fixture resolver seeded from a table, with no network access	done
-7.3	7	Multi-string TXT records arrive as a single concatenated string	done
-7.4	7	Non-existent name and no-record-of-this-type are distinguishable to callers	done
-7.5	7	The real resolver is forced to the pure-Go implementation, with no CGO	done
-7.6	7	A test proves the suite makes no outbound DNS query	done
-8.1	8	Table-driven tests over zone fixtures cover nested includes, redirect, and each Verdict class	done
-8.2	8	The Matched Mechanism is reported correctly for each case	done
-8.3	8	Over-limit records are detected and reported as a finding	done
-8.4	8	Addresses are normalised before matching, with a test for the IPv4-mapped case	done
-8.5	8	Addresses carrying a zone are rejected rather than silently mismatched	done
-8.6	8	Each `ip4` fixture case has an `ip6` twin	done
-8.7	8	Without `--client-ip`, `auth` renders the tree and reports the Verdict as not evaluated	done
-8.8	8	`auth` opens no TCP connection, proven by a test	done
-9.1	9	Key records are parsed for version, key type, the public key and flags	done
-9.2	9	Revoked, empty and test-mode keys are reported as faults	done
-9.3	9	Discovery finds a seeded selector among decoys in the fixtures	done
-9.4	9	`--selector` is repeatable and adds to the built-in list	done
-9.5	9	The effective list probed appears in both renderings	done
-9.6	9	Discovery query volume is bounded, and the bound is stated in the output	done
-10.1	10	Policy, subdomain policy, both alignment modes, sampling rate and the reporting addresses are parsed	done
-10.2	10	Alignment is computed for both SPF and DKIM, in relaxed and strict modes	done
-10.3	10	Fixtures cover strict versus relaxed, subdomain policy, and a missing record resolving to none	done
-10.4	10	The sampling rate is reported and never applied, with a test proving repeated runs agree	done
-10.5	10	A null Envelope Sender moves the SPF subject to the HELO Identity, and the Verdict names which subject it evaluated	done
-11.1	11	PLAIN and LOGIN both work against the test double	done
-11.2	11	Authentication over a non-TLS connection is refused, with a test	done
-11.3	11	Credentials are read from the environment and the config file, and never from a flag	done
-11.4	11	A test asserts the credential appears in neither rendering, in either mechanism	done
-11.5	11	The advertised mechanism list is recorded, and an unsupported-mechanism case reports clearly	done
-12.1	12	Against a test double rejecting one specific Triple, that Cell resolves Rejected and all others Accepted	done
-12.2	12	A fresh connection per Cell, asserted by counting connections at the test double	done
-12.3	12	A greylisting host produces an Inconclusive Cell, and a retry that succeeds resolves it to Accepted	done
-12.4	12	An aborted sweep leaves Unrun Cells that render distinctly from Inconclusive ones	done
-12.5	12	`--rate` is honoured and cannot be raised above the default	done
-12.6	12	The matrix exits 1 if any Cell is Rejected, otherwise 4 if any is Inconclusive or Unrun, otherwise 0	done
-12.7	12	Runs clean under the race detector	done
-13.1	13	Golden-file tests cover alignment failure, over-limit SPF, TLS refusal and greylisting	done
-13.2	13	Observed Outcomes and computed Verdicts are distinguishable in the output	done
-13.3	13	An ambiguous case says so and names the disambiguating Probe	done
-13.4	13	A matrix Transcript produces a run-level Diagnosis plus a per-Cell line	done
-13.5	13	Unreadable input exits with the usage code	done
-13.6	13	No Diagnosis ever claims a message was delivered	done
-14.1	14	One report combines Transcript, Verdicts, matrix and Diagnosis in both formats	done
-14.2	14	Both renderings are always written to the output directory, defaulting to a timestamped one	done
-14.3	14	The JSON flag changes only what standard output carries	done
-14.4	14	A mistyped config key is an error naming the key	done
-14.5	14	A key set to zero is distinguishable from an absent key, with tests for the rate and verification cases	done
-14.6	14	Explicit flags beat config values	done
-14.7	14	An end-to-end run against the test double yields a report that needs no source reading, and exit codes are asserted	done
+id	issue	acceptance_criterion	status	test	mutation_proven
+1.1	1	`go build` produces a `frank` binary with no CGO	done	version.TestGoModHasNoThirdPartyRequirements+scripts/check.sh static-binary step	not-yet
+1.2	1	All four verbs are routed; unimplemented ones exit with the usage/config code	done	cli.TestEveryVerbRoutesToItsOwnHandler, cli.TestUnknownVerbReturnsUsageCode	yes
+1.3	1	Global flags parse: `--config`, `--output`, `--json`, `--verbose`, `--dry-run`, `--rate`, `--confirm-send`, `--redact`	done	cli.TestAllGlobalFlagsParse	not-yet
+1.4	1	CI runs vet and `go test -race` on push, and is green	done	version.TestCIRunsVetAndRace	yes
+1.5	1	No third-party dependencies added	done	version.TestGoModHasNoThirdPartyRequirements	yes
+2.1	2	A hand-constructed Transcript renders to both formats	done	transcript.TestHandConstructedTranscriptRendersBothFormats	not-yet
+2.2	2	Reply parsing covers multiline continuations and enhanced status codes	done	transcript.TestParseReplyMultilineContinuation, TestParseReplyEnhancedStatusCode	not-yet
+2.3	2	Every event carries both a monotonic and a wall-clock stamp, and they are monotonic in order	done	transcript.TestEveryEventCarriesBothClocksAndOrderIsMonotonic	not-yet
+2.4	2	`--redact` accepts a repeatable RE2 pattern and masks matches in both renderings	done	transcript.TestRedactMasksInBothRenderings	not-yet
+2.5	2	The redaction code path is exercised by a test even when no pattern is supplied	done	transcript.TestRedactionPathRunsWithNoPatterns	not-yet
+2.6	2	The in-memory Transcript is unchanged by rendering	done	transcript.TestRenderingLeavesTranscriptUnchanged	not-yet
+3.1	3	Accepts or rejects at any Phase, with a caller-supplied code, enhanced status and text	done	smtptest.TestRejectAtEachPhase	not-yet
+3.2	3	Advertises a caller-supplied extension list in its EHLO response	done	smtptest.TestEHLOAdvertisesConfiguredExtensions	not-yet
+3.3	3	Offers or refuses STARTTLS on demand, with a self-signed certificate for the TLS case	done	smtptest.TestSTARTTLSUpgradesAndPresentsSelfSignedCert	not-yet
+3.4	3	Rejects a specific Identity Triple and accepts the rest	done	smtptest.TestRejectsNamedIdentityTripleAcceptsOthers	not-yet
+3.5	3	Can emit a Deferral first and an Acceptance on a later connection, so greylisting is testable	done	smtptest.TestGreylistDefersFirstConnectionAcceptsSecond	not-yet
+3.6	3	Runs in-process on an ephemeral port and needs no fixtures on disk	done	smtptest.TestStartsOnEphemeralPortWithoutDiskFixtures	not-yet
+4.1	4	`--envelope-from`, `--helo` and `--header-from` are independent and any may differ from any other	done	smtpconv.TestIdentitySlotsAreIndependent	not-yet
+4.2	4	A test asserts all three mismatched values appear verbatim in the Transcript at the correct Phases	done	smtpconv.TestMismatchedIdentitiesAppearVerbatimAtCorrectPhases	not-yet
+4.3	4	EHLO falls back to HELO and the fallback is recorded	done	smtpconv.TestEHLOFallsBackToHELOAndRecordsIt	not-yet
+4.4	4	Exactly one Recipient per Probe, so every Phase has exactly one Outcome	done	smtpconv.TestExactlyOneRecipientPerProbe	not-yet
+4.5	4	Correct dot-stuffing and CRLF-dot-CRLF termination, covered by a test with a body line starting in a dot	done	smtpconv.TestDotStuffingAndTermination	not-yet
+4.6	4	The reply to the DATA verb and the reply to the terminating dot are recorded as separate Phases	done	smtpconv.TestDataAndEndOfDataAreSeparatePhases	not-yet
+4.7	4	Per-Phase timings are populated and monotonic	done	smtpconv.TestPhaseTimingsPopulatedAndMonotonic	not-yet
+4.8	4	A clean QUIT on every exit path, including error paths	done	smtpconv.TestQuitOnEveryExitPathIncludingErrors	not-yet
+4.9	4	Exit codes are asserted by tests	done	cli.TestProbeExitCodes	not-yet
+5.1	5	`require` aborts when STARTTLS is unavailable, `prefer` continues in plaintext, `none` never offers it	done	smtpconv.TestTLSModePolicy	not-yet
+5.2	5	The chain, negotiated version and cipher are recorded identically whether verification passes or fails	done	smtpconv.TestTLSEvidenceIdenticalUnderBothVerifyModes	not-yet
+5.3	5	A Probe against a self-signed certificate completes with `--tls-verify=false` and records the failure as a finding	done	smtpconv.TestSelfSignedCompletesWithVerifyDisabledAndRecordsTheFailure	not-yet
+5.4	5	The same Probe aborts with `--tls-verify=true`, and the chain is still in the Transcript	done	smtpconv.TestSelfSignedAbortsWithVerifyEnabledAndKeepsChain	not-yet
+5.5	5	Session resumption is disabled, with a test proving the certificate is captured on every connection	done	smtpconv.TestResumedSessionSkipsCertificateCapture	not-yet
+5.6	5	The server name used for verification is set explicitly and recorded	done	smtpconv.TestServerNameIsExplicitAndRecorded	not-yet
+6.1	6	Without `--confirm-send`, a run walks to RCPT TO and stops, transmitting no Probe Message	done	cli.TestProbeDryRunTransmitsNothing	not-yet
+6.2	6	`--confirm-send` requires a Recipient and the Recipient appears in the Transcript	done	gate.TestConfirmSendRequiresMatchingRecipient	not-yet
+6.3	6	`--confirm-send` together with `--dry-run` is a usage error	done	gate.TestConfirmSendWithDryRunIsUsageError	not-yet
+6.4	6	A run needing confirmation with no TTY errors before the first dial, proven by a test	done	cli.TestProbeWithoutConfirmSendAndWithoutTerminalRefusesBeforeDialing	not-yet
+6.5	6	The rate limiter defaults to 6 per minute and is asserted by a timing test	done	gate.TestDefaultRateIsSixPerMinute	not-yet
+6.6	6	An attempt to raise the rate above the default is refused	done	gate.TestRateAboveDefaultIsRefused	not-yet
+6.7	6	Repeated Deferrals back off exponentially and abort past a threshold	done	gate.TestDeferralBackoffIsExponential, TestBackoffAbortsPastThreshold	not-yet
+7.1	7	An interface covering TXT, A/AAAA, MX, PTR and NS that the standard resolver satisfies	done	resolve.TestSystemResolverSatisfiesInterface	not-yet
+7.2	7	A fixture resolver seeded from a table, with no network access	done	resolve.TestFixtureMultiStringTXTArrivesConcatenated	not-yet
+7.3	7	Multi-string TXT records arrive as a single concatenated string	done	resolve.TestFixtureMultiStringTXTArrivesConcatenated	not-yet
+7.4	7	Non-existent name and no-record-of-this-type are distinguishable to callers	done	resolve.TestNotFoundAndNoRecordsAreDistinguishable	not-yet
+7.5	7	The real resolver is forced to the pure-Go implementation, with no CGO	done	resolve.TestSystemResolverSatisfiesInterface	not-yet
+7.6	7	A test proves the suite makes no outbound DNS query	done	resolve.TestForbidNetworkAlsoBlocksTheSystemResolver	not-yet
+8.1	8	Table-driven tests over zone fixtures cover nested includes, redirect, and each Verdict class	done	spf.TestEvaluate	not-yet
+8.2	8	The Matched Mechanism is reported correctly for each case	done	spf.TestEvaluate (wantMech column)	not-yet
+8.3	8	Over-limit records are detected and reported as a finding	done	spf.TestLookupLimitExceededIsAFinding	not-yet
+8.4	8	Addresses are normalised before matching, with a test for the IPv4-mapped case	done	spf.TestAddressNormalisedBeforeMatching	not-yet
+8.5	8	Addresses carrying a zone are rejected rather than silently mismatched	done	spf.TestZonedAddressRejected	not-yet
+8.6	8	Each `ip4` fixture case has an `ip6` twin	done	spf.TestEveryIPv4CaseHasIPv6Twin	not-yet
+8.7	8	Without `--client-ip`, `auth` renders the tree and reports the Verdict as not evaluated	done	cli.TestAuthWithoutClientIPReportsNotEvaluated	not-yet
+8.8	8	`auth` opens no TCP connection, proven by a test	done	cli.TestAuthOpensNoTCPConnection	not-yet
+9.1	9	Key records are parsed for version, key type, the public key and flags	done	dkim.TestParseKeyRecord	not-yet
+9.2	9	Revoked, empty and test-mode keys are reported as faults	done	dkim.TestKeyFaultsReported	not-yet
+9.3	9	Discovery finds a seeded selector among decoys in the fixtures	done	dkim.TestDiscoveryFindsSeededSelectorAmongDecoys	not-yet
+9.4	9	`--selector` is repeatable and adds to the built-in list	done	dkim.TestSelectorFlagExtendsBuiltInList	not-yet
+9.5	9	The effective list probed appears in both renderings	done	dkim.TestEffectiveSelectorListAppearsInBothRenderings	not-yet
+9.6	9	Discovery query volume is bounded, and the bound is stated in the output	done	dkim.TestDiscoveryQueryVolumeBoundedAndStated	not-yet
+10.1	10	Policy, subdomain policy, both alignment modes, sampling rate and the reporting addresses are parsed	done	dmarc.TestParsePolicyRecord	not-yet
+10.2	10	Alignment is computed for both SPF and DKIM, in relaxed and strict modes	done	dmarc.TestAlignment	not-yet
+10.3	10	Fixtures cover strict versus relaxed, subdomain policy, and a missing record resolving to none	done	dmarc.TestPolicyResolution	not-yet
+10.4	10	The sampling rate is reported and never applied, with a test proving repeated runs agree	done	dmarc.TestSamplingRateReportedNotApplied	not-yet
+10.5	10	A null Envelope Sender moves the SPF subject to the HELO Identity, and the Verdict names which subject it evaluated	done	spf.TestNullEnvelopeSenderMovesSubjectToHELO	not-yet
+11.1	11	PLAIN and LOGIN both work against the test double	done	smtpconv.TestAuthMechanisms	not-yet
+11.2	11	Authentication over a non-TLS connection is refused, with a test	done	smtpconv.TestAuthRefusedWithoutTLS	not-yet
+11.3	11	Credentials are read from the environment and the config file, and never from a flag	done	cli.TestCredentialsFromConfigNeverFromAFlag	yes
+11.4	11	A test asserts the credential appears in neither rendering, in either mechanism	done	smtpconv.TestCredentialNeverReachesEitherRendering	not-yet
+11.5	11	The advertised mechanism list is recorded, and an unsupported-mechanism case reports clearly	done	smtpconv.TestAdvertisedMechanismsRecordedAndUnsupportedReported	not-yet
+12.1	12	Against a test double rejecting one specific Triple, that Cell resolves Rejected and all others Accepted	done	matrix.TestRejectedTripleIsolated	not-yet
+12.2	12	A fresh connection per Cell, asserted by counting connections at the test double	done	matrix.TestFreshConnectionPerCell	not-yet
+12.3	12	A greylisting host produces an Inconclusive Cell, and a retry that succeeds resolves it to Accepted	done	matrix.TestGreylistedCellInconclusiveThenAcceptedOnRetry	not-yet
+12.4	12	An aborted sweep leaves Unrun Cells that render distinctly from Inconclusive ones	done	matrix.TestAbortedSweepLeavesUnrunCellsRenderedDistinctly	not-yet
+12.5	12	`--rate` is honoured and cannot be raised above the default	done	cli.TestMatrixRateCannotBeRaisedAboveTheDefault	yes
+12.6	12	The matrix exits 1 if any Cell is Rejected, otherwise 4 if any is Inconclusive or Unrun, otherwise 0	done	cli.TestMatrixExitCodes	yes
+12.7	12	Runs clean under the race detector	done	matrix.TestConcurrentSweepIsRaceFree	not-yet
+13.1	13	Golden-file tests cover alignment failure, over-limit SPF, TLS refusal and greylisting	done	explain.TestGoldenAlignmentFailure, TestGoldenOverLimitSPF, TestGoldenTLSRefusal, TestGoldenGreylisting	not-yet
+13.2	13	Observed Outcomes and computed Verdicts are distinguishable in the output	done	explain.TestObservedAndComputedAreDistinguishable	not-yet
+13.3	13	An ambiguous case says so and names the disambiguating Probe	done	explain.TestAmbiguousCaseNamesDisambiguatingProbe	not-yet
+13.4	13	A matrix Transcript produces a run-level Diagnosis plus a per-Cell line	done	explain.TestMatrixTranscriptYieldsRunAndPerCellDiagnosis	not-yet
+13.5	13	Unreadable input exits with the usage code	done	cli.TestExplainUnreadableInputExitsUsage	yes
+13.6	13	No Diagnosis ever claims a message was delivered	done	explain.TestNoDiagnosisClaimsDelivery	not-yet
+14.1	14	One report combines Transcript, Verdicts, matrix and Diagnosis in both formats	done	report.TestCombinedReportContainsAllSections	not-yet
+14.2	14	Both renderings are always written to the output directory, defaulting to a timestamped one	done	cli.TestJSONFlagChangesOnlyStdout	yes
+14.3	14	The JSON flag changes only what standard output carries	done	cli.TestJSONFlagChangesOnlyStdout	not-yet
+14.4	14	A mistyped config key is an error naming the key	done	report.TestUnknownConfigKeyIsErrorNamingKey	not-yet
+14.5	14	A key set to zero is distinguishable from an absent key, with tests for the rate and verification cases	done	report.TestZeroValueDistinctFromAbsent	not-yet
+14.6	14	Explicit flags beat config values	done	report.TestExplicitFlagBeatsConfigValue	not-yet
+14.7	14	An end-to-end run against the test double yields a report that needs no source reading, and exit codes are asserted	done	cli.TestEndToEndReportAgainstDouble	yes
