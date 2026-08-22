@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"io"
@@ -9,6 +10,7 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/MatrixMagician/Frank/internal/gate"
 	"github.com/MatrixMagician/Frank/internal/smtpconv"
 	"github.com/MatrixMagician/Frank/internal/transcript"
 )
@@ -73,7 +75,34 @@ func probeCmd(opts *Options, args []string, stdout, stderr io.Writer) Code {
 		return CodeUsage
 	}
 
-	dryRun := opts.DryRun || opts.ConfirmSend == ""
+	// The gate runs before anything is dialed, so a run that would have to
+	// prompt with no terminal errors before the target is touched.
+	decision, err := gate.DecideInteractive(gate.Input{
+		DryRunRequested: opts.DryRun,
+		ConfirmSend:     opts.ConfirmSend,
+		Recipient:       pf.recipient,
+		StdinIsTerminal: gate.StdinIsTerminal(),
+	})
+	if err != nil {
+		fmt.Fprintf(stderr, "frank probe: %v\n", err)
+		return CodeUsage
+	}
+
+	var ratePtr *int
+	if opts.Explicit["rate"] {
+		ratePtr = &opts.Rate
+	}
+	limiter, err := gate.NewLimiter(ratePtr, gate.RealClock{})
+	if err != nil {
+		fmt.Fprintf(stderr, "frank probe: %v\n", err)
+		return CodeUsage
+	}
+	if err := limiter.Wait(context.Background()); err != nil {
+		fmt.Fprintf(stderr, "frank probe: %v\n", err)
+		return CodeIncomplete
+	}
+
+	dryRun := decision.Disposition == gate.DispositionDryRun
 
 	cfg := smtpconv.Config{
 		TargetHost: target,
@@ -96,6 +125,10 @@ func probeCmd(opts *Options, args []string, stdout, stderr io.Writer) Code {
 	cfg.Credentials = creds
 
 	res := smtpconv.Run(cfg)
+	if res.Transcript != nil {
+		res.Transcript.Append(transcript.KindNote, transcript.PhaseDial, nil).Note =
+			"send disposition: " + decision.Disposition.String() + ", " + decision.Reason
+	}
 
 	redactor, err := transcript.NewRedactor(opts.Redact)
 	if err != nil {

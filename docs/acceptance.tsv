@@ -31,13 +31,13 @@ id	issue	acceptance_criterion	status
 5.4	5	The same Probe aborts with `--tls-verify=true`, and the chain is still in the Transcript	done
 5.5	5	Session resumption is disabled, with a test proving the certificate is captured on every connection	done
 5.6	5	The server name used for verification is set explicitly and recorded	done
-6.1	6	Without `--confirm-send`, a run walks to RCPT TO and stops, transmitting no Probe Message	pending
-6.2	6	`--confirm-send` requires a Recipient and the Recipient appears in the Transcript	pending
-6.3	6	`--confirm-send` together with `--dry-run` is a usage error	pending
-6.4	6	A run needing confirmation with no TTY errors before the first dial, proven by a test	pending
-6.5	6	The rate limiter defaults to 6 per minute and is asserted by a timing test	pending
-6.6	6	An attempt to raise the rate above the default is refused	pending
-6.7	6	Repeated Deferrals back off exponentially and abort past a threshold	pending
+6.1	6	Without `--confirm-send`, a run walks to RCPT TO and stops, transmitting no Probe Message	done
+6.2	6	`--confirm-send` requires a Recipient and the Recipient appears in the Transcript	done
+6.3	6	`--confirm-send` together with `--dry-run` is a usage error	done
+6.4	6	A run needing confirmation with no TTY errors before the first dial, proven by a test	done
+6.5	6	The rate limiter defaults to 6 per minute and is asserted by a timing test	done
+6.6	6	An attempt to raise the rate above the default is refused	done
+6.7	6	Repeated Deferrals back off exponentially and abort past a threshold	done
 7.1	7	An interface covering TXT, A/AAAA, MX, PTR and NS that the standard resolver satisfies	done
 7.2	7	A fixture resolver seeded from a table, with no network access	done
 7.3	7	Multi-string TXT records arrive as a single concatenated string	done

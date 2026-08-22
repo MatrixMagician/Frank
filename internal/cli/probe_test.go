@@ -3,6 +3,7 @@ package cli
 import (
 	"bytes"
 	"net"
+	"strings"
 	"testing"
 
 	"github.com/MatrixMagician/Frank/internal/smtptest"
@@ -76,11 +77,12 @@ func TestProbeExitCodes(t *testing.T) {
 	})
 }
 
-func TestProbeDefaultsToDryRunWithoutConfirmSend(t *testing.T) {
+func TestProbeDryRunTransmitsNothing(t *testing.T) {
 	srv := smtptest.Start(t)
 	var stdout, stderr bytes.Buffer
 
 	args := []string{
+		"--dry-run",
 		"--output", t.TempDir(),
 		"probe",
 		"--target", srv.Addr(),
@@ -95,7 +97,40 @@ func TestProbeDefaultsToDryRunWithoutConfirmSend(t *testing.T) {
 		t.Errorf("Main() code = %v, want %v\nstderr: %s", got, CodeAcceptance, stderr.String())
 	}
 	if len(srv.Received()) != 0 {
-		t.Error("message was transmitted without --confirm-send, want a dry run")
+		t.Error("message was transmitted under --dry-run")
+	}
+	if !strings.Contains(stdout.String(), "rcpt-to") {
+		t.Error("the dry run did not reach RCPT TO, but --dry-run walks the full protocol up to DATA")
+	}
+}
+
+// TestProbeWithoutConfirmSendAndWithoutTerminalRefusesBeforeDialing is the CI
+// safety rule: a run that would have to prompt errors instead of hanging, and
+// it does so before the target is touched. Under `go test` stdin is never a
+// terminal, which is exactly the case this asserts.
+func TestProbeWithoutConfirmSendAndWithoutTerminalRefusesBeforeDialing(t *testing.T) {
+	srv := smtptest.Start(t)
+	var stdout, stderr bytes.Buffer
+
+	args := []string{
+		"--output", t.TempDir(),
+		"probe",
+		"--target", srv.Addr(),
+		"--envelope-from", "envelope@sender.example",
+		"--helo", "client.helo.example",
+		"--header-from", "header@from.example",
+		"--recipient", "rcpt@recipient.example",
+	}
+	got := Main(args, &stdout, &stderr)
+
+	if got != CodeUsage {
+		t.Errorf("Main() code = %v, want %v", got, CodeUsage)
+	}
+	if !strings.Contains(stderr.String(), "not a terminal") {
+		t.Errorf("stderr = %q, want it to name the missing terminal", stderr.String())
+	}
+	if srv.ConnectionCount() != 0 {
+		t.Errorf("the target was dialed %d times, want the refusal to happen first", srv.ConnectionCount())
 	}
 }
 
