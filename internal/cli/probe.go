@@ -90,6 +90,11 @@ func probeCmd(opts *Options, args []string, stdout, stderr io.Writer) Code {
 		TLSServerName: pf.serverName,
 	}
 
+	// ADR-0007: credentials come from the environment or the config file and
+	// never from a flag, because argv is world-readable through /proc.
+	creds, _ := smtpconv.CredentialsFromEnv()
+	cfg.Credentials = creds
+
 	res := smtpconv.Run(cfg)
 
 	redactor, err := transcript.NewRedactor(opts.Redact)
@@ -97,6 +102,7 @@ func probeCmd(opts *Options, args []string, stdout, stderr io.Writer) Code {
 		fmt.Fprintf(stderr, "frank probe: %v\n", err)
 		return CodeUsage
 	}
+	smtpconv.RegisterCredentials(redactor, creds)
 
 	if res.Transcript != nil {
 		if err := writeReports(opts.Output, res.Transcript, redactor); err != nil {

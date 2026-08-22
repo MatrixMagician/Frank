@@ -97,6 +97,10 @@ type Config struct {
 	// TLSRootCAs is the pool verification runs against, nil meaning the system
 	// roots. A test seeds it with the double's self-signed certificate.
 	TLSRootCAs *x509.CertPool
+
+	// Credentials authenticate the Probe. Frank refuses to send them over a
+	// connection that is not TLS-protected, per ADR-0007.
+	Credentials Credentials
 }
 
 // Result is everything one Probe produced. Transcript is populated whenever
@@ -241,6 +245,13 @@ func Run(cfg Config) *Result {
 	default:
 		tr.Append(transcript.KindNote, transcript.PhaseSTARTTLS, nil).Note =
 			"starttls not advertised, continuing in plaintext"
+	}
+
+	if cfg.Credentials.isSet() {
+		if !authenticate(tr, res, conn, reader, cfg.Credentials,
+			authMechanisms(res.Extensions), tr.TLS != nil) {
+			return res
+		}
 	}
 
 	mailFromIdx := len(tr.Events)

@@ -63,11 +63,11 @@ id	issue	acceptance_criterion	status
 10.3	10	Fixtures cover strict versus relaxed, subdomain policy, and a missing record resolving to none	done
 10.4	10	The sampling rate is reported and never applied, with a test proving repeated runs agree	done
 10.5	10	A null Envelope Sender moves the SPF subject to the HELO Identity, and the Verdict names which subject it evaluated	done
-11.1	11	PLAIN and LOGIN both work against the test double	pending
-11.2	11	Authentication over a non-TLS connection is refused, with a test	pending
-11.3	11	Credentials are read from the environment and the config file, and never from a flag	pending
-11.4	11	A test asserts the credential appears in neither rendering, in either mechanism	pending
-11.5	11	The advertised mechanism list is recorded, and an unsupported-mechanism case reports clearly	pending
+11.1	11	PLAIN and LOGIN both work against the test double	done
+11.2	11	Authentication over a non-TLS connection is refused, with a test	done
+11.3	11	Credentials are read from the environment and the config file, and never from a flag	done
+11.4	11	A test asserts the credential appears in neither rendering, in either mechanism	done
+11.5	11	The advertised mechanism list is recorded, and an unsupported-mechanism case reports clearly	done
 12.1	12	Against a test double rejecting one specific Triple, that Cell resolves Rejected and all others Accepted	pending
 12.2	12	A fresh connection per Cell, asserted by counting connections at the test double	pending
 12.3	12	A greylisting host produces an Inconclusive Cell, and a retry that succeeds resolves it to Accepted	pending
