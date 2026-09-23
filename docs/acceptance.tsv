@@ -52,6 +52,7 @@ id	issue	acceptance_criterion	status	test	mutation_proven
 8.6	8	Each `ip4` fixture case has an `ip6` twin	done	spf.TestEveryIPv4CaseHasIPv6Twin	not-yet
 8.7	8	Without `--client-ip`, `auth` renders the tree and reports the Verdict as not evaluated	done	cli.TestAuthWithoutClientIPReportsNotEvaluated	not-yet
 8.8	8	`auth` opens no TCP connection, proven by a test	done	cli.TestAuthOpensNoTCPConnection	not-yet
+8.9	8	An mx mechanism over the secondary limit is a permerror and a record defect, per RFC 7208 §4.6.4	done	spf.TestSecondaryLookupLimitIsARecordDefect	not-yet
 9.1	9	Key records are parsed for version, key type, the public key and flags	done	dkim.TestParseKeyRecord	not-yet
 9.2	9	Revoked, empty and test-mode keys are reported as faults	done	dkim.TestKeyFaultsReported	not-yet
 9.3	9	Discovery finds a seeded selector among decoys in the fixtures	done	dkim.TestDiscoveryFindsSeededSelectorAmongDecoys	not-yet
@@ -75,7 +76,7 @@ id	issue	acceptance_criterion	status	test	mutation_proven
 12.5	12	`--rate` is honoured and cannot be raised above the default	done	cli.TestMatrixRateCannotBeRaisedAboveTheDefault	yes
 12.6	12	The matrix exits 1 if any Cell is Rejected, otherwise 4 if any is Inconclusive or Unrun, otherwise 0	done	cli.TestMatrixExitCodes	yes
 12.7	12	Runs clean under the race detector	done	matrix.TestConcurrentSweepIsRaceFree	not-yet
-13.1	13	Golden-file tests cover alignment failure, over-limit SPF, TLS refusal and greylisting	done	explain.TestGoldenAlignmentFailure, TestGoldenOverLimitSPF, TestGoldenTLSRefusal, TestGoldenGreylisting	not-yet
+13.1	13	Golden-file tests cover alignment failure, over-limit SPF, secondary-limit SPF, TLS refusal and greylisting	done	explain.TestGoldenAlignmentFailure, TestGoldenOverLimitSPF, TestGoldenSecondaryLimitSPF, TestGoldenTLSRefusal, TestGoldenGreylisting	not-yet
 13.2	13	Observed Outcomes and computed Verdicts are distinguishable in the output	done	explain.TestObservedAndComputedAreDistinguishable	not-yet
 13.3	13	An ambiguous case says so and names the disambiguating Probe	done	explain.TestAmbiguousCaseNamesDisambiguatingProbe	not-yet
 13.4	13	A matrix Transcript produces a run-level Diagnosis plus a per-Cell line	done	explain.TestMatrixTranscriptYieldsRunAndPerCellDiagnosis	not-yet

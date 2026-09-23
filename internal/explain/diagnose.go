@@ -150,22 +150,11 @@ var rules = []rule{
 		say: alignmentDiagnosis,
 	},
 	{
-		name: "rejection with an over-limit spf record",
+		name: "rejection with an spf record defect",
 		when: func(f facts) bool {
-			return f.haveReply && f.lastReply.IsPermanent() && overLimit(f.in.SPF)
+			return f.haveReply && f.lastReply.IsPermanent() && firstDefect(f.in.SPF) != nil
 		},
-		say: func(f facts) Diagnosis {
-			return Diagnosis{
-				Summary:    "the target refused the message, and the sender's SPF record exceeds the RFC 7208 lookup limit, which makes it a permerror for every receiver and is a root cause in its own right",
-				Confidence: Supported,
-				Evidence: []Evidence{
-					{Observed: true, Text: replyText(f)},
-					{Observed: false, Text: fmt.Sprintf("the SPF record for %s uses %d dns-querying mechanisms against a limit of %d", f.in.SPF.Subject, f.in.SPF.Lookups, spf.LookupLimit)},
-					{Observed: false, Text: "an over-limit record evaluates to permerror regardless of the sending ip"},
-				},
-				NextProbe: "flatten the SPF record below the limit and probe the same identity triple again",
-			}
-		},
+		say: defectDiagnosis,
 	},
 	{
 		name: "rejection",
@@ -287,16 +276,42 @@ func passWord(pass bool) string {
 	return "does not pass DMARC"
 }
 
-func overLimit(res *spf.Result) bool {
-	if res == nil {
-		return false
+func firstDefect(res *spf.Result) *spf.Defect {
+	if res == nil || len(res.Defects) == 0 {
+		return nil
 	}
-	for _, d := range res.Defects {
-		if d.Kind == spf.DefectLookupLimitExceeded {
-			return true
+	return &res.Defects[0]
+}
+
+// defectDiagnosis names a Record Defect as the cause. Every kind makes the
+// record a permerror for every receiver, which is what lets it explain a
+// Rejection on its own.
+func defectDiagnosis(f facts) Diagnosis {
+	d := firstDefect(f.in.SPF)
+	switch d.Kind {
+	case spf.DefectSecondaryLimitExceeded:
+		return Diagnosis{
+			Summary:    "the target refused the message, and an mx mechanism in the sender's SPF record exceeds the RFC 7208 secondary limit, which makes it a permerror for every receiver and is a root cause in its own right",
+			Confidence: Supported,
+			Evidence: []Evidence{
+				{Observed: true, Text: replyText(f)},
+				{Observed: false, Text: strings.TrimPrefix(d.Message, "spf: ")},
+				{Observed: false, Text: "an mx mechanism over the secondary limit evaluates to permerror regardless of the sending ip"},
+			},
+			NextProbe: fmt.Sprintf("replace the mx mechanism for %s with ip4/ip6 ranges or cut its MX set to %d hosts, and probe the same identity triple again", d.Domain, spf.SecondaryLookupLimit),
+		}
+	default:
+		return Diagnosis{
+			Summary:    "the target refused the message, and the sender's SPF record exceeds the RFC 7208 lookup limit, which makes it a permerror for every receiver and is a root cause in its own right",
+			Confidence: Supported,
+			Evidence: []Evidence{
+				{Observed: true, Text: replyText(f)},
+				{Observed: false, Text: fmt.Sprintf("the SPF record for %s uses %d dns-querying mechanisms against a limit of %d", f.in.SPF.Subject, f.in.SPF.Lookups, spf.LookupLimit)},
+				{Observed: false, Text: "an over-limit record evaluates to permerror regardless of the sending ip"},
+			},
+			NextProbe: "flatten the SPF record below the limit and probe the same identity triple again",
 		}
 	}
-	return false
 }
 
 func replyText(f facts) string {
