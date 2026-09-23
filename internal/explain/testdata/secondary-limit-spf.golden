@@ -1,0 +1,7 @@
+diagnosis: the target refused the message, and an mx mechanism in the sender's SPF record exceeds the RFC 7208 secondary limit, which makes it a permerror for every receiver and is a root cause in its own right
+confidence: supported
+evidence:
+  - observed: the target replied 550 5.7.23 at end-of-data: SPF validation failed
+  - computed: mx mechanism at sender.example resolved 12 hosts, more than the secondary limit of 10
+  - computed: an mx mechanism over the secondary limit evaluates to permerror regardless of the sending ip
+next probe: replace the mx mechanism for sender.example with ip4/ip6 ranges or cut its MX set to 10 hosts, and probe the same identity triple again

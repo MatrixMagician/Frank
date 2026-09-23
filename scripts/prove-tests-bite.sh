@@ -229,6 +229,11 @@ mutate 8.3 "an over-limit record is reported as a record defect" \
 	"s = s.replace('Kind:    DefectLookupLimitExceeded,', 'Kind:    DefectKind(99),')" \
 	TestLookupLimitExceededIsARecordDefect ./internal/spf/
 
+mutate 8.9 "an mx mechanism over the secondary limit is a permerror" \
+	internal/spf/eval.go \
+	"s = s.replace('return false, e.mxLimitExceeded(target, len(mxs))', 'e.mxLimitExceeded(target, len(mxs)); mxs = mxs[:SecondaryLookupLimit]')" \
+	TestSecondaryLookupLimitIsARecordDefect ./internal/spf/
+
 mutate 8.4 "addresses are normalised before matching (ADR-0006)" \
 	internal/spf/spf.go \
 	"s = s.replace('addr: addr.Unmap()', 'addr: addr')" \

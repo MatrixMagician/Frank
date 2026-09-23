@@ -121,6 +121,9 @@ func TestSecondaryLookupLimitIsARecordDefect(t *testing.T) {
 
 	got := evaluate(t, z, "a@example.com", "frank.invalid", "192.0.2.50")
 
+	if got.Verdict != PermError {
+		t.Errorf("Verdict = %v, want permerror: RFC 7208 §4.6.4 says an mx over the secondary limit MUST produce permerror", got.Verdict)
+	}
 	var found bool
 	for _, d := range got.Defects {
 		if d.Kind == DefectSecondaryLimitExceeded {
@@ -129,6 +132,28 @@ func TestSecondaryLookupLimitIsARecordDefect(t *testing.T) {
 	}
 	if !found {
 		t.Errorf("Defects = %+v, want a secondary-limit defect: mx resolved more than %d hosts", got.Defects, SecondaryLookupLimit)
+	}
+}
+
+// RFC 7208 §4.6.4 has PTR names beyond the tenth ignored, not treated as an
+// error: the IP's owner controls them, so they are no fault of the record.
+func TestPTRNamesBeyondTheSecondaryLimitAreIgnoredNotADefect(t *testing.T) {
+	z := resolve.NewZone()
+	z.TXT("example.com", "v=spf1 ptr -all")
+	var names []string
+	for i := range 12 {
+		names = append(names, "h"+string(rune('a'+i))+".example.com")
+	}
+	z.PTR("192.0.2.9", names...)
+	z.A("hl.example.com", "192.0.2.9")
+
+	got := evaluate(t, z, "a@example.com", "frank.invalid", "192.0.2.9")
+
+	if got.Verdict != Fail {
+		t.Errorf("Verdict = %v, want fail: the only validating name is the twelfth, which must be ignored", got.Verdict)
+	}
+	if len(got.Defects) != 0 {
+		t.Errorf("Defects = %+v, want none: excess PTR names are not the domain's fault", got.Defects)
 	}
 }
 

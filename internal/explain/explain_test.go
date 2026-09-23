@@ -145,6 +145,40 @@ func TestGoldenOverLimitSPF(t *testing.T) {
 	}
 }
 
+func TestGoldenSecondaryLimitSPF(t *testing.T) {
+	z := resolve.NewZone()
+	z.TXT("sender.example", "v=spf1 mx -all")
+	for i := range 12 {
+		host := "mx" + string(rune('a'+i)) + ".sender.example"
+		z.MX("sender.example", uint16(i), host)
+		z.A(host, "203.0.113.1")
+	}
+
+	ip, err := spf.NewCandidateSendingIP(mustAddr(t, "192.0.2.7"), true)
+	if err != nil {
+		t.Fatalf("NewCandidateSendingIP: %v", err)
+	}
+	spfRes, err := spf.Evaluate(context.Background(), z, spf.Request{
+		EnvelopeSender: "bounce@sender.example",
+		CandidateIP:    &ip,
+	})
+	if err != nil {
+		t.Fatalf("spf.Evaluate: %v", err)
+	}
+
+	d := Diagnose(Input{
+		Transcript: transcriptEndingWith(t, transcript.PhaseEndOfData,
+			"550 5.7.23 SPF validation failed\r\n"),
+		SPF: spfRes,
+	})
+
+	golden(t, "secondary-limit-spf", d.Render())
+
+	if !strings.Contains(d.Summary, "secondary limit") {
+		t.Errorf("summary does not name the secondary limit: %q", d.Summary)
+	}
+}
+
 func TestGoldenTLSRefusal(t *testing.T) {
 	tr := transcript.NewTranscript("mx.target.example:25", transcript.IdentityTriple{
 		EnvelopeSender: "bounce@sender.example",

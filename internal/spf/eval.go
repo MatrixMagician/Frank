@@ -15,8 +15,8 @@ import (
 const LookupLimit = 10
 
 // SecondaryLookupLimit is RFC 7208 §4.6.4's cap on the number of MX or PTR
-// hosts a single mx/ptr mechanism may resolve against; hosts beyond it are
-// ignored rather than making the record a permerror.
+// hosts a single mx/ptr mechanism may resolve against. Exceeding it makes an
+// mx mechanism a permerror; PTR names beyond it are ignored.
 const SecondaryLookupLimit = 10
 
 // mechanismSpec is one row of the mechanism table: how to evaluate a parsed
@@ -320,15 +320,16 @@ func (e *evaluator) recordLimitExceeded(domain string) {
 	})
 }
 
-func (e *evaluator) recordSecondaryLimitExceeded(kind MechanismKind, domain string, total int) {
-	e.defects = append(e.defects, Defect{
-		Kind:   DefectSecondaryLimitExceeded,
-		Domain: domain,
-		Message: fmt.Sprintf(
-			"spf: %s mechanism at %s resolved %d hosts, more than the secondary limit of %d; extras were ignored",
-			kind, domain, total, SecondaryLookupLimit,
-		),
-	})
+// mxLimitExceeded records the Record Defect and returns the error that makes
+// the mx mechanism a permerror, as RFC 7208 §4.6.4 requires: the publishing
+// domain controls its MX set, so an oversized one is its fault.
+func (e *evaluator) mxLimitExceeded(domain string, total int) error {
+	err := fmt.Errorf(
+		"spf: mx mechanism at %s resolved %d hosts, more than the secondary limit of %d",
+		domain, total, SecondaryLookupLimit,
+	)
+	e.defects = append(e.defects, Defect{Kind: DefectSecondaryLimitExceeded, Domain: domain, Message: err.Error()})
+	return err
 }
 
 func matchAll(_ context.Context, _ *evaluator, _ string, _ Mechanism, _ netip.Addr) (bool, error) {
@@ -397,10 +398,8 @@ func matchMX(ctx context.Context, e *evaluator, domain string, term Mechanism, c
 		}
 		return false, err
 	}
-	total := len(mxs)
-	if total > SecondaryLookupLimit {
-		e.recordSecondaryLimitExceeded(MechMX, target, total)
-		mxs = mxs[:SecondaryLookupLimit]
+	if len(mxs) > SecondaryLookupLimit {
+		return false, e.mxLimitExceeded(target, len(mxs))
 	}
 	for _, mx := range mxs {
 		addrs, aErr := e.resolver.LookupAddr(ctx, mx.Host)
@@ -436,8 +435,9 @@ func matchPTR(ctx context.Context, e *evaluator, domain string, term Mechanism, 
 		}
 		return false, err
 	}
+	// RFC 7208 §4.6.4: the IP's owner controls its PTR names, so extras are
+	// ignored rather than blamed on the record.
 	if len(names) > SecondaryLookupLimit {
-		e.recordSecondaryLimitExceeded(MechPTR, target, len(names))
 		names = names[:SecondaryLookupLimit]
 	}
 	for _, name := range names {
