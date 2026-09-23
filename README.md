@@ -28,14 +28,14 @@ Go 1.26, no CGO, no third-party dependencies at all.
 connection.
 
 ```
-frank auth --envelope-from noreply@github.com --header-from noreply@github.com --client-ip 192.30.252.1
+frank auth --envelope-from noreply@github.com --header-from noreply@github.com --candidate-ip 192.30.252.1
 ```
 
 It prints the SPF Evaluation Tree with the Matched Mechanism marked, the DKIM
 selectors it found and the full list it probed, and the DMARC policy with
 alignment computed in both relaxed and strict modes.
 
-Without `--client-ip` there is no Candidate Sending IP, so the SPF Verdict is
+Without `--candidate-ip` there is no Candidate Sending IP, so the SPF Verdict is
 reported as not evaluated and the tree still renders. Frank never invents a
 sending IP.
 

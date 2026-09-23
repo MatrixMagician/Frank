@@ -67,7 +67,7 @@ They get distinct named types so the compiler refuses the collapse:
 type SourceAddress struct{ addr netip.Addr }      // observed, never settable by a flag
 type CandidateSendingIP struct {
     addr     netip.Addr
-    Observed bool                                  // false when --client-ip supplied it
+    Observed bool                                  // false when --candidate-ip supplied it
 }
 ```
 

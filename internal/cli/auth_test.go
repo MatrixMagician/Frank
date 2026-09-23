@@ -20,7 +20,7 @@ func TestAuthRendersTreeAndVerdict(t *testing.T) {
 	code := runAuthWith(context.Background(), &Options{}, authOptions{
 		envelopeFrom: "a@example.com",
 		helo:         "frank.invalid",
-		clientIP:     "192.0.2.7",
+		candidateIP:  "192.0.2.7",
 		resolver:     z,
 	}, &stdout, &stderr)
 
@@ -35,7 +35,7 @@ func TestAuthRendersTreeAndVerdict(t *testing.T) {
 	}
 }
 
-func TestAuthWithoutClientIPReportsNotEvaluated(t *testing.T) {
+func TestAuthWithoutCandidateIPReportsNotEvaluated(t *testing.T) {
 	z := resolve.NewZone()
 	z.TXT("example.com", "v=spf1 include:inc.example -all")
 	z.TXT("inc.example", "v=spf1 ip4:192.0.2.0/24 -all")
@@ -54,7 +54,7 @@ func TestAuthWithoutClientIPReportsNotEvaluated(t *testing.T) {
 		t.Errorf("output does not report the verdict as not evaluated:\n%s", out)
 	}
 	if !strings.Contains(out, "include:inc.example") {
-		t.Errorf("tree is not rendered without a client IP:\n%s", out)
+		t.Errorf("tree is not rendered without a Candidate Sending IP:\n%s", out)
 	}
 }
 
@@ -94,7 +94,7 @@ func TestAuthOpensNoTCPConnection(t *testing.T) {
 		envelopeFrom: "a@example.com",
 		helo:         ln.Addr().String(),
 		headerFrom:   "a@example.com",
-		clientIP:     "192.0.2.7",
+		candidateIP:  "192.0.2.7",
 		resolver:     z,
 	}, &stdout, &stderr)
 
@@ -106,19 +106,35 @@ func TestAuthOpensNoTCPConnection(t *testing.T) {
 	}
 }
 
-func TestAuthRejectsZonedClientIP(t *testing.T) {
+func TestAuthRejectsZonedCandidateIP(t *testing.T) {
 	z := resolve.NewZone()
 	z.TXT("example.com", "v=spf1 -all")
 
 	var stdout, stderr bytes.Buffer
 	code := runAuthWith(context.Background(), &Options{}, authOptions{
 		envelopeFrom: "a@example.com",
-		clientIP:     "fe80::1%eth0",
+		candidateIP:  "fe80::1%eth0",
 		resolver:     z,
 	}, &stdout, &stderr)
 
 	if code != CodeUsage {
 		t.Errorf("code = %v, want %v for an address carrying a zone", code, CodeUsage)
+	}
+}
+
+func TestAuthTakesTheCandidateIPFlag(t *testing.T) {
+	var stdout, stderr bytes.Buffer
+	code := runAuth(&Options{}, []string{"--envelope-from", "a@example.com", "--candidate-ip", "nope"}, &stdout, &stderr)
+	if code != CodeUsage {
+		t.Errorf("code = %v, want %v for an unparseable address", code, CodeUsage)
+	}
+	if want := `--candidate-ip "nope" is not an ip address`; !strings.Contains(stderr.String(), want) {
+		t.Errorf("stderr = %q, want it to contain %q", stderr.String(), want)
+	}
+
+	stderr.Reset()
+	if code := runAuth(&Options{}, []string{"--envelope-from", "a@example.com", "--client-ip", "192.0.2.7"}, &stdout, &stderr); code != CodeUsage {
+		t.Errorf("--client-ip: code = %v, want %v: the flag was renamed outright", code, CodeUsage)
 	}
 }
 
@@ -128,9 +144,9 @@ func TestAuthNullEnvelopeSenderUsesHELOSubject(t *testing.T) {
 
 	var stdout, stderr bytes.Buffer
 	code := runAuthWith(context.Background(), &Options{}, authOptions{
-		helo:     "frank.invalid",
-		clientIP: "192.0.2.7",
-		resolver: z,
+		helo:        "frank.invalid",
+		candidateIP: "192.0.2.7",
+		resolver:    z,
 	}, &stdout, &stderr)
 
 	if code != CodeAcceptance {

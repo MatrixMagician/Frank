@@ -21,7 +21,7 @@ type authOptions struct {
 	envelopeFrom string
 	helo         string
 	headerFrom   string
-	clientIP     string
+	candidateIP  string
 	dkimDomain   string
 	dkimPass     bool
 	selectors    []string
@@ -35,7 +35,7 @@ func runAuth(opts *Options, args []string, stdout, stderr io.Writer) Code {
 	fs.StringVar(&a.envelopeFrom, "envelope-from", "", "the Envelope Sender to evaluate SPF for")
 	fs.StringVar(&a.helo, "helo", "", "the HELO Identity, and SPF's subject when the Envelope Sender is null")
 	fs.StringVar(&a.headerFrom, "header-from", "", "the Header From, which DMARC aligns against")
-	fs.StringVar(&a.clientIP, "client-ip", "", "the Candidate Sending IP to evaluate against")
+	fs.StringVar(&a.candidateIP, "candidate-ip", "", "the Candidate Sending IP to evaluate against")
 	fs.StringVar(&a.dkimDomain, "dkim-domain", "", "a DKIM signing domain to compute alignment for")
 	fs.BoolVar(&a.dkimPass, "dkim-pass", false, "treat the supplied DKIM signing domain as having verified")
 	selectors := (*repeatable)(&a.selectors)
@@ -57,12 +57,12 @@ func runAuthWith(ctx context.Context, opts *Options, a authOptions, stdout, stde
 	req := spf.Request{EnvelopeSender: a.envelopeFrom, HeloIdentity: a.helo}
 
 	// Per ADR-0002 there is no Source Address to default to here, because auth
-	// opens no connection. Without --client-ip the Verdict stays not evaluated
+	// opens no connection. Without --candidate-ip the Verdict stays not evaluated
 	// rather than being computed against an invented IP.
-	if a.clientIP != "" {
-		addr, err := netip.ParseAddr(a.clientIP)
+	if a.candidateIP != "" {
+		addr, err := netip.ParseAddr(a.candidateIP)
 		if err != nil {
-			fmt.Fprintf(stderr, "frank auth: --client-ip %q is not an ip address\n", a.clientIP)
+			fmt.Fprintf(stderr, "frank auth: --candidate-ip %q is not an ip address\n", a.candidateIP)
 			return CodeUsage
 		}
 		ip, err := spf.NewCandidateSendingIP(addr, false)

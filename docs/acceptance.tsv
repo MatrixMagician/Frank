@@ -50,7 +50,7 @@ id	issue	acceptance_criterion	status	test	mutation_proven
 8.4	8	Addresses are normalised before matching, with a test for the IPv4-mapped case	done	spf.TestAddressNormalisedBeforeMatching	not-yet
 8.5	8	Addresses carrying a zone are rejected rather than silently mismatched	done	spf.TestZonedAddressRejected	not-yet
 8.6	8	Each `ip4` fixture case has an `ip6` twin	done	spf.TestEveryIPv4CaseHasIPv6Twin	not-yet
-8.7	8	Without `--client-ip`, `auth` renders the tree and reports the Verdict as not evaluated	done	cli.TestAuthWithoutClientIPReportsNotEvaluated	not-yet
+8.7	8	Without `--candidate-ip`, `auth` renders the tree and reports the Verdict as not evaluated	done	cli.TestAuthWithoutCandidateIPReportsNotEvaluated	not-yet
 8.8	8	`auth` opens no TCP connection, proven by a test	done	cli.TestAuthOpensNoTCPConnection	not-yet
 8.9	8	An mx mechanism over the secondary limit is a permerror and a record defect, per RFC 7208 §4.6.4	done	spf.TestSecondaryLookupLimitIsARecordDefect	not-yet
 9.1	9	Key records are parsed for version, key type, the public key and flags	done	dkim.TestParseKeyRecord	not-yet

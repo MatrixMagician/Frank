@@ -12,5 +12,5 @@ observed or supplied.
 ## Consequences
 
 Two IP fields will look redundant to a reader who only pictures the direct-to-MX case;
-they are not, and collapsing them reintroduces the bug. `--client-ip` sets the Candidate
+they are not, and collapsing them reintroduces the bug. `--candidate-ip` sets the Candidate
 Sending IP only — nothing can override the Source Address, which is an observation.

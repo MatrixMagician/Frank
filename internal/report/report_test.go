@@ -149,12 +149,15 @@ func TestConfigDecodesEveryDocumentedKey(t *testing.T) {
 	  "selectors": ["custom1"],
 	  "username": "probe@sender.example",
 	  "password": "hunter2",
-	  "client_ip": "192.0.2.7"
+	  "candidate_ip": "192.0.2.7"
 	}`)
 
 	cfg, err := Load(path)
 	if err != nil {
 		t.Fatalf("Load: %v", err)
+	}
+	if cfg.CandidateIP == nil || *cfg.CandidateIP != "192.0.2.7" {
+		t.Errorf("candidate_ip = %v", cfg.CandidateIP)
 	}
 	if cfg.Target == nil || *cfg.Target != "smtp.example.com:587" {
 		t.Errorf("target = %v", cfg.Target)
