@@ -381,7 +381,7 @@ func TestRedirect(t *testing.T) {
 	})
 }
 
-func TestLookupLimitExceededIsAFinding(t *testing.T) {
+func TestLookupLimitExceededIsARecordDefect(t *testing.T) {
 	z := resolve.NewZone()
 	var terms []string
 	for i := range 11 {
@@ -397,13 +397,13 @@ func TestLookupLimitExceededIsAFinding(t *testing.T) {
 		t.Errorf("Verdict = %v, want permerror for an over-limit record", got.Verdict)
 	}
 	var found bool
-	for _, f := range got.Findings {
-		if f.Kind == FindingLookupLimitExceeded {
+	for _, d := range got.Defects {
+		if d.Kind == DefectLookupLimitExceeded {
 			found = true
 		}
 	}
 	if !found {
-		t.Errorf("Findings = %+v, want a lookup-limit finding: an over-limit record is a root cause in its own right", got.Findings)
+		t.Errorf("Defects = %+v, want a lookup-limit defect: an over-limit record is a root cause in its own right", got.Defects)
 	}
 }
 
@@ -591,6 +591,20 @@ func TestUnsupportedMacroIsAnErrorNotASilentMismatch(t *testing.T) {
 	e := &evaluator{subject: "example.com", envelopeSender: "a@example.com"}
 	if _, err := e.expandMacros("%{p}", "example.com", netip.MustParseAddr("192.0.2.1")); err == nil {
 		t.Error("%{p} expanded without error, want it refused so the record becomes a permerror rather than a wrong lookup")
+	}
+}
+
+func TestUnsupportedMacroIsAnEvaluationLimitNotARecordDefect(t *testing.T) {
+	z := resolve.NewZone()
+	z.TXT("example.com", "v=spf1 exists:%{p}.example.com -all")
+
+	got := evaluate(t, z, "a@example.com", "frank.invalid", "192.0.2.7")
+
+	if len(got.Defects) != 0 {
+		t.Errorf("Defects = %+v, want none: an unsupported macro is Frank's gap, not the domain's", got.Defects)
+	}
+	if len(got.Limits) != 1 || got.Limits[0].Kind != LimitUnsupportedMacro || got.Limits[0].Kind.String() != "unsupported-macro" {
+		t.Errorf("Limits = %+v, want one unsupported-macro limit", got.Limits)
 	}
 }
 

@@ -171,31 +171,55 @@ type Mechanism struct {
 	Raw          string
 }
 
-// FindingKind is the closed set of report-worthy conditions that are not
-// themselves a Verdict but must survive into the rendered output alongside
-// one, per issue #8: an over-limit record is a root cause in its own right,
-// not merely the cause of a permerror return value that could be dropped.
-type FindingKind int
+// DefectKind is the closed set of Record Defects: faults in the domain's
+// published record that must survive into the rendered output alongside the
+// Verdict, per issue #8. An over-limit record is a root cause in its own
+// right, not merely the cause of a permerror return value that could be
+// dropped.
+type DefectKind int
 
 const (
-	FindingLookupLimitExceeded FindingKind = iota
-	FindingSecondaryLimitExceeded
-	FindingUnsupportedMacro
+	DefectLookupLimitExceeded DefectKind = iota
+	DefectSecondaryLimitExceeded
 )
 
-var findingNames = [...]string{"lookup-limit-exceeded", "secondary-limit-exceeded", "unsupported-macro"}
+var defectNames = [...]string{"lookup-limit-exceeded", "secondary-limit-exceeded"}
 
-func (f FindingKind) String() string {
-	if int(f) < 0 || int(f) >= len(findingNames) {
+func (k DefectKind) String() string {
+	if int(k) < 0 || int(k) >= len(defectNames) {
 		return "unknown"
 	}
-	return findingNames[f]
+	return defectNames[k]
 }
 
-// Finding is a report-worthy condition discovered during evaluation that
-// must be visible in the output regardless of what Verdict it produced.
-type Finding struct {
-	Kind    FindingKind
+// Defect is a Record Defect. A Diagnosis may name it as a cause.
+type Defect struct {
+	Kind    DefectKind
+	Domain  string
+	Message string
+}
+
+// LimitKind is the closed set of Evaluation Limits: points where Frank could
+// not evaluate the record faithfully. They are its own type so a Diagnosis
+// cannot mistake one for a Record Defect and blame the domain for Frank's gap.
+type LimitKind int
+
+const (
+	LimitUnsupportedMacro LimitKind = iota
+)
+
+var limitNames = [...]string{"unsupported-macro"}
+
+func (k LimitKind) String() string {
+	if int(k) < 0 || int(k) >= len(limitNames) {
+		return "unknown"
+	}
+	return limitNames[k]
+}
+
+// Limit is an Evaluation Limit. It qualifies the Verdict and is never a cause.
+type Limit struct {
+	Kind    LimitKind
 	Domain  string
 	Message string
 }
@@ -229,7 +253,7 @@ type Request struct {
 
 // Result is the SPF Verdict for a Request, with its provenance: the Verdict (or
 // NotEvaluated), which subject domain it was computed for, the Matched
-// Mechanism, the full Evaluation Tree, any Findings, and the DNS-querying
+// Mechanism, the full Evaluation Tree, any Record Defects and Evaluation Limits, and the DNS-querying
 // mechanism count charged against the Lookup Limit.
 type Result struct {
 	Verdict     Verdict
@@ -237,7 +261,8 @@ type Result struct {
 	SubjectFrom string
 	Matched     *Node
 	Tree        *EvaluationTree
-	Findings    []Finding
+	Defects     []Defect
+	Limits      []Limit
 	Lookups     int
 	CandidateIP *CandidateSendingIP
 }

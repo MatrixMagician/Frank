@@ -159,7 +159,9 @@ func (e *evaluator) macroValue(letter byte, domain string, clientIP netip.Addr) 
 		// %{p} requires a validated PTR lookup, which RFC 7208 §7.3 itself
 		// discourages. Refusing it is a permerror, which is honest; expanding
 		// it to something plausible would produce a confident wrong Verdict.
-		return "", fmt.Errorf("macro %%{p} is not supported")
+		err := fmt.Errorf("macro %%{p} is not supported")
+		e.limits = append(e.limits, Limit{Kind: LimitUnsupportedMacro, Domain: domain, Message: "spf: " + err.Error()})
+		return "", err
 	default:
 		return "", fmt.Errorf("unknown macro letter %q", string(letter))
 	}

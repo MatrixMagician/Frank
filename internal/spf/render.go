@@ -10,7 +10,7 @@ import (
 // Verdict was reached: the subject and how it was chosen, the Candidate
 // Sending IP and whether it was observed or supplied, the Verdict (or
 // NotEvaluated) and its Matched Mechanism, the Lookup Limit usage, every
-// Finding, and every mechanism reached in order, indented by the include or
+// Record Defect and Evaluation Limit, and every mechanism reached in order, indented by the include or
 // redirect depth that reached it.
 func RenderTree(w io.Writer, res *Result) error {
 	if _, err := fmt.Fprintf(w, "subject: %s (from the %s)\n", res.Subject, res.SubjectFrom); err != nil {
@@ -48,12 +48,23 @@ func RenderTree(w io.Writer, res *Result) error {
 		return err
 	}
 
-	if len(res.Findings) > 0 {
-		if _, err := fmt.Fprintln(w, "findings:"); err != nil {
+	if len(res.Defects) > 0 {
+		if _, err := fmt.Fprintln(w, "record defects:"); err != nil {
 			return err
 		}
-		for _, f := range res.Findings {
-			if _, err := fmt.Fprintf(w, "  - [%s] %s: %s\n", f.Kind, f.Domain, f.Message); err != nil {
+		for _, d := range res.Defects {
+			if _, err := fmt.Fprintf(w, "  - [%s] %s: %s\n", d.Kind, d.Domain, d.Message); err != nil {
+				return err
+			}
+		}
+	}
+
+	if len(res.Limits) > 0 {
+		if _, err := fmt.Fprintln(w, "evaluation limits:"); err != nil {
+			return err
+		}
+		for _, l := range res.Limits {
+			if _, err := fmt.Fprintf(w, "  - [%s] %s: %s\n", l.Kind, l.Domain, l.Message); err != nil {
 				return err
 			}
 		}
