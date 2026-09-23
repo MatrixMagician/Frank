@@ -25,7 +25,7 @@ type Config struct {
 	Selectors    []string `json:"selectors,omitempty"`
 	Username     *string  `json:"username,omitempty"`
 	Password     *string  `json:"password,omitempty"`
-	ClientIP     *string  `json:"client_ip,omitempty"`
+	CandidateIP  *string  `json:"candidate_ip,omitempty"`
 }
 
 // Load reads and strictly decodes a config file. DisallowUnknownFields turns a

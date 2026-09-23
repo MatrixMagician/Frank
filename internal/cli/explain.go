@@ -18,8 +18,8 @@ import (
 )
 
 type explainFlags struct {
-	authPath string
-	clientIP string
+	authPath    string
+	candidateIP string
 }
 
 func explainCmd(opts *Options, args []string, stdout, stderr io.Writer) Code {
@@ -27,7 +27,7 @@ func explainCmd(opts *Options, args []string, stdout, stderr io.Writer) Code {
 	fs := flag.NewFlagSet("explain", flag.ContinueOnError)
 	fs.SetOutput(stderr)
 	fs.StringVar(&ef.authPath, "auth", "", "a captured auth document; without it Frank performs the lookups itself")
-	fs.StringVar(&ef.clientIP, "client-ip", "", "the Candidate Sending IP to evaluate SPF against")
+	fs.StringVar(&ef.candidateIP, "candidate-ip", "", "the Candidate Sending IP to evaluate SPF against")
 
 	if err := fs.Parse(args); err != nil {
 		return CodeUsage
@@ -204,13 +204,13 @@ func populateVerdicts(ctx context.Context, in *explain.Input, tr *transcript.Tra
 		HeloIdentity:   tr.Identity.HeloIdentity,
 	}
 
-	clientIP := ef.clientIP
-	if clientIP == "" {
-		clientIP = tr.SourceAddr.String()
+	candidateIP := ef.candidateIP
+	if candidateIP == "" {
+		candidateIP = tr.SourceAddr.String()
 	}
-	if clientIP != "" {
-		if addr, err := netip.ParseAddr(clientIP); err == nil {
-			if ip, err := spf.NewCandidateSendingIP(addr, ef.clientIP == ""); err == nil {
+	if candidateIP != "" {
+		if addr, err := netip.ParseAddr(candidateIP); err == nil {
+			if ip, err := spf.NewCandidateSendingIP(addr, ef.candidateIP == ""); err == nil {
 				req.CandidateIP = &ip
 			}
 		}

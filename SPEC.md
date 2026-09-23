@@ -110,9 +110,9 @@ identically either way and the certificate chain is always captured and verified
 flag decides only whether a verification failure aborts the Probe. The verification
 finding is recorded in both modes.
 
-**`--client-ip`** sets the Candidate Sending IP. Under `probe` and `matrix` it defaults to
+**`--candidate-ip`** sets the Candidate Sending IP. Under `probe` and `matrix` it defaults to
 the observed Source Address, normalized per ADR-0006. Under `auth` there is no Source
-Address to default to, so without `--client-ip` Frank reports the SPF Verdict as not
+Address to default to, so without `--candidate-ip` Frank reports the SPF Verdict as not
 evaluated and still renders the Evaluation Tree, the Lookup Limit finding, DKIM and
 DMARC. It never invents a sending IP.
 
@@ -222,7 +222,7 @@ Standalone authentication analysis, beginning with SPF, because SPF is what most
 - Enforce and *report* the RFC 7208 lookup limit (10 DNS-querying mechanisms):
   Frank should show when a record is over-limit, because an over-limit SPF record
   is itself a common root cause.
-- Given a Candidate Sending IP (`--client-ip`, defaulting to the observed Source
+- Given a Candidate Sending IP (`--candidate-ip`, defaulting to the observed Source
   Address — see ADR-0002; the default is wrong whenever the Target Host relays onward,
   so the Verdict always states which IP it used and whether it was observed or supplied),
   evaluate to a Verdict: `pass`, `fail`, `softfail`,
