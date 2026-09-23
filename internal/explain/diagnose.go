@@ -291,8 +291,8 @@ func overLimit(res *spf.Result) bool {
 	if res == nil {
 		return false
 	}
-	for _, f := range res.Findings {
-		if f.Kind == spf.FindingLookupLimitExceeded {
+	for _, d := range res.Defects {
+		if d.Kind == spf.DefectLookupLimitExceeded {
 			return true
 		}
 	}

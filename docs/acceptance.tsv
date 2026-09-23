@@ -46,7 +46,7 @@ id	issue	acceptance_criterion	status	test	mutation_proven
 7.6	7	A test proves the suite makes no outbound DNS query	done	resolve.TestForbidNetworkAlsoBlocksTheSystemResolver	not-yet
 8.1	8	Table-driven tests over zone fixtures cover nested includes, redirect, and each Verdict class	done	spf.TestEvaluate	not-yet
 8.2	8	The Matched Mechanism is reported correctly for each case	done	spf.TestEvaluate (wantMech column)	not-yet
-8.3	8	Over-limit records are detected and reported as a finding	done	spf.TestLookupLimitExceededIsAFinding	not-yet
+8.3	8	Over-limit records are detected and reported as a record defect	done	spf.TestLookupLimitExceededIsARecordDefect	not-yet
 8.4	8	Addresses are normalised before matching, with a test for the IPv4-mapped case	done	spf.TestAddressNormalisedBeforeMatching	not-yet
 8.5	8	Addresses carrying a zone are rejected rather than silently mismatched	done	spf.TestZonedAddressRejected	not-yet
 8.6	8	Each `ip4` fixture case has an `ip6` twin	done	spf.TestEveryIPv4CaseHasIPv6Twin	not-yet

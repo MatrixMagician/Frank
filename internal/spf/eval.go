@@ -56,7 +56,8 @@ type evaluator struct {
 	helo           string
 	tree           *EvaluationTree
 	lookups        int
-	findings       []Finding
+	defects        []Defect
+	limits         []Limit
 	visited        map[string]bool
 }
 
@@ -99,7 +100,8 @@ func Evaluate(ctx context.Context, r resolve.Resolver, req Request) (*Result, er
 		SubjectFrom: subjectFrom,
 		Matched:     matched,
 		Tree:        e.tree,
-		Findings:    e.findings,
+		Defects:     e.defects,
+		Limits:      e.limits,
 		Lookups:     e.lookups,
 		CandidateIP: req.CandidateIP,
 	}
@@ -311,16 +313,16 @@ func (e *evaluator) appendNode(domain string, term Mechanism, depth int, costsLo
 }
 
 func (e *evaluator) recordLimitExceeded(domain string) {
-	e.findings = append(e.findings, Finding{
-		Kind:    FindingLookupLimitExceeded,
+	e.defects = append(e.defects, Defect{
+		Kind:    DefectLookupLimitExceeded,
 		Domain:  domain,
 		Message: fmt.Sprintf("spf: lookup limit of %d dns-querying mechanisms exceeded while evaluating %s", LookupLimit, domain),
 	})
 }
 
 func (e *evaluator) recordSecondaryLimitExceeded(kind MechanismKind, domain string, total int) {
-	e.findings = append(e.findings, Finding{
-		Kind:   FindingSecondaryLimitExceeded,
+	e.defects = append(e.defects, Defect{
+		Kind:   DefectSecondaryLimitExceeded,
 		Domain: domain,
 		Message: fmt.Sprintf(
 			"spf: %s mechanism at %s resolved %d hosts, more than the secondary limit of %d; extras were ignored",

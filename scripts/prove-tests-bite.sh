@@ -224,10 +224,10 @@ mutate 7.6 "the suite cannot reach real DNS" \
 
 # --- issue 8: SPF ----------------------------------------------------------
 
-mutate 8.3 "an over-limit record is reported as a finding" \
+mutate 8.3 "an over-limit record is reported as a record defect" \
 	internal/spf/eval.go \
-	"s = s.replace('Kind:    FindingLookupLimitExceeded,', 'Kind:    FindingKind(99),')" \
-	TestLookupLimitExceededIsAFinding ./internal/spf/
+	"s = s.replace('Kind:    DefectLookupLimitExceeded,', 'Kind:    DefectKind(99),')" \
+	TestLookupLimitExceededIsARecordDefect ./internal/spf/
 
 mutate 8.4 "addresses are normalised before matching (ADR-0006)" \
 	internal/spf/spf.go \

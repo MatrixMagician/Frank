@@ -109,7 +109,7 @@ func TestDualCIDRAOnBothFamilies(t *testing.T) {
 	}
 }
 
-func TestSecondaryLookupLimitIsAFinding(t *testing.T) {
+func TestSecondaryLookupLimitIsARecordDefect(t *testing.T) {
 	z := resolve.NewZone()
 	z.TXT("example.com", "v=spf1 mx -all")
 	for i := 0; i < 12; i++ {
@@ -122,13 +122,13 @@ func TestSecondaryLookupLimitIsAFinding(t *testing.T) {
 	got := evaluate(t, z, "a@example.com", "frank.invalid", "192.0.2.50")
 
 	var found bool
-	for _, f := range got.Findings {
-		if f.Kind == FindingSecondaryLimitExceeded {
+	for _, d := range got.Defects {
+		if d.Kind == DefectSecondaryLimitExceeded {
 			found = true
 		}
 	}
 	if !found {
-		t.Errorf("Findings = %+v, want a secondary-limit finding: mx resolved more than %d hosts", got.Findings, SecondaryLookupLimit)
+		t.Errorf("Defects = %+v, want a secondary-limit defect: mx resolved more than %d hosts", got.Defects, SecondaryLookupLimit)
 	}
 }
 
