@@ -27,6 +27,11 @@ step "tests (race)" env CGO_ENABLED=1 go test -race ./...
 # is opt-in here and always on in CI.
 step "ledger references resolve" env LEDGER_RUN_TESTS="${LEDGER_RUN_TESTS:-0}" ./scripts/verify-ledger.sh
 
+# Both run in CI; leaving them out here let a rename that broke a mutation's
+# source-text match pass locally and fail on push.
+step "mutations are caught" env CGO_ENABLED=1 ./scripts/prove-tests-bite.sh
+step "integration across processes" env CGO_ENABLED=0 ./scripts/integration.sh
+
 echo
 pending=$(awk -F'\t' 'NR>1 && $4!="done"' docs/acceptance.tsv | wc -l)
 total=$(($(wc -l < docs/acceptance.tsv) - 1))
