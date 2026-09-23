@@ -41,7 +41,11 @@ for ref in $refs; do
 	pkg=${ref%%.*}
 	name=${ref#*.}
 
-	location=$(grep -rl "^func ${name}(" internal --include='*_test.go' 2>/dev/null | head -1)
+	# Look in the named package first: a test name can legitimately exist in
+	# two packages, and a tree-wide `head -1` then picks whichever the
+	# filesystem lists first, which differed between CI and local checkouts.
+	location=$(grep -rl "^func ${name}(" "internal/${pkg}" --include='*_test.go' 2>/dev/null | head -1)
+	[ -n "$location" ] || location=$(grep -rl "^func ${name}(" internal --include='*_test.go' 2>/dev/null | head -1)
 	if [ -z "$location" ]; then
 		printf 'STALE       %s does not exist\n' "$ref"
 		missing=$((missing + 1))
