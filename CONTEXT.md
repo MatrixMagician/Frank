@@ -98,10 +98,11 @@ Triple that met it.
 _Avoid_: soft bounce, retry, temp fail.
 
 **Verdict**:
-What the published records say for a domain. The SPF result and its Matched Mechanism,
-the DMARC policy, the Alignment outcome. Computed from DNS, independent of
-any Probe.
-_Avoid_: result, finding, assessment.
+What one authentication mechanism's published records say for a domain: an SPF
+Verdict (with its Matched Mechanism), a DKIM Verdict, or a DMARC Verdict (with its
+policy and Alignment). Always qualified by its mechanism. Computed from DNS,
+independent of any Probe. Combining Verdicts is the work of a Diagnosis, not a Verdict.
+_Avoid_: result, finding, assessment, bare "Verdict" when the mechanism is ambiguous.
 
 **Diagnosis**:
 The evidential synthesis of Outcomes and Verdicts that `explain` produces. A statement
@@ -136,6 +137,18 @@ The single mechanism in an Evaluation Tree that determined the SPF Verdict.
 RFC 7208's cap of ten DNS-querying mechanisms. Exceeding it is a root cause in its own
 right, not a warning.
 _Avoid_: SPF limit, DNS budget.
+
+**Record Defect**:
+A fault in a domain's published record that must be reported alongside its Verdict,
+whatever that Verdict is. Exceeding the Lookup Limit is the canonical example. A
+Record Defect is the domain's problem and may be named as a cause in a Diagnosis.
+_Avoid_: finding, warning, error.
+
+**Evaluation Limit**:
+A point where Frank could not evaluate a record faithfully, such as a feature Frank
+does not support. It is Frank's gap, not the domain's, so it qualifies a Verdict and is
+never named as a cause in a Diagnosis.
+_Avoid_: finding, warning, unsupported record.
 
 **Alignment**:
 Whether the domain authenticated by SPF or DKIM matches the Header From domain, in

@@ -227,7 +227,7 @@ type Request struct {
 	ClientIP       *CandidateSendingIP
 }
 
-// Result is the outcome of evaluating a Request: the Verdict (or
+// Result is the SPF Verdict for a Request, with its provenance: the Verdict (or
 // NotEvaluated), which subject domain it was computed for, the Matched
 // Mechanism, the full Evaluation Tree, any Findings, and the DNS-querying
 // mechanism count charged against the Lookup Limit.
