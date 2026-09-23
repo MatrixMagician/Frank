@@ -17,16 +17,16 @@ func RenderTree(w io.Writer, res *Result) error {
 		return err
 	}
 
-	if res.ClientIP == nil {
+	if res.CandidateIP == nil {
 		if _, err := fmt.Fprintln(w, "candidate sending ip: none supplied, so the verdict is not evaluated"); err != nil {
 			return err
 		}
 	} else {
 		origin := "supplied"
-		if res.ClientIP.Observed {
+		if res.CandidateIP.Observed {
 			origin = "observed"
 		}
-		if _, err := fmt.Fprintf(w, "candidate sending ip: %s (%s)\n", res.ClientIP.String(), origin); err != nil {
+		if _, err := fmt.Fprintf(w, "candidate sending ip: %s (%s)\n", res.CandidateIP.String(), origin); err != nil {
 			return err
 		}
 	}

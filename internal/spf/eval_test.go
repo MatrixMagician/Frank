@@ -153,7 +153,7 @@ func TestEvaluateExercisesEveryMechanismKindOverTheFixtureResolver(t *testing.T)
 	if err != nil {
 		t.Fatalf("NewCandidateSendingIP: %v", err)
 	}
-	req.ClientIP = &ip
+	req.CandidateIP = &ip
 
 	if _, err := Evaluate(context.Background(), z, req); err != nil {
 		t.Fatalf("Evaluate: %v", err)

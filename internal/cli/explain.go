@@ -211,7 +211,7 @@ func populateVerdicts(ctx context.Context, in *explain.Input, tr *transcript.Tra
 	if clientIP != "" {
 		if addr, err := netip.ParseAddr(clientIP); err == nil {
 			if ip, err := spf.NewCandidateSendingIP(addr, ef.clientIP == ""); err == nil {
-				req.ClientIP = &ip
+				req.CandidateIP = &ip
 			}
 		}
 	}

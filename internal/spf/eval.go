@@ -62,16 +62,16 @@ type evaluator struct {
 
 // Evaluate parses and evaluates the SPF record for req's subject domain
 // (the Envelope Sender's domain, or the HELO Identity's domain when the
-// Envelope Sender is null, per RFC 7208 §2.4) against req.ClientIP,
+// Envelope Sender is null, per RFC 7208 §2.4) against req.CandidateIP,
 // expanding include and redirect and enforcing the Lookup Limit, and
-// returns a Result whose Tree is always populated even when req.ClientIP is
+// returns a Result whose Tree is always populated even when req.CandidateIP is
 // nil and the Verdict is NotEvaluated.
 func Evaluate(ctx context.Context, r resolve.Resolver, req Request) (*Result, error) {
 	subject, subjectFrom := subjectDomain(req)
 
 	e := &evaluator{
 		resolver:       r,
-		clientIP:       req.ClientIP,
+		clientIP:       req.CandidateIP,
 		subject:        subject,
 		envelopeSender: req.EnvelopeSender,
 		helo:           req.HeloIdentity,
@@ -80,8 +80,8 @@ func Evaluate(ctx context.Context, r resolve.Resolver, req Request) (*Result, er
 	}
 
 	var clientAddr netip.Addr
-	if req.ClientIP != nil {
-		clientAddr = req.ClientIP.Addr()
+	if req.CandidateIP != nil {
+		clientAddr = req.CandidateIP.Addr()
 	}
 
 	verdict, matched, err := e.evaluateDomain(ctx, subject, 0, clientAddr)
@@ -89,7 +89,7 @@ func Evaluate(ctx context.Context, r resolve.Resolver, req Request) (*Result, er
 		return nil, err
 	}
 
-	if req.ClientIP == nil {
+	if req.CandidateIP == nil {
 		verdict = NotEvaluated
 	}
 
@@ -101,7 +101,7 @@ func Evaluate(ctx context.Context, r resolve.Resolver, req Request) (*Result, er
 		Tree:        e.tree,
 		Findings:    e.findings,
 		Lookups:     e.lookups,
-		ClientIP:    req.ClientIP,
+		CandidateIP: req.CandidateIP,
 	}
 	return result, nil
 }

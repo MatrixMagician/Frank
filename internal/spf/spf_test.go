@@ -26,7 +26,7 @@ func evaluate(t *testing.T, z *resolve.Zone, sender, helo, clientIP string) *Res
 	t.Helper()
 	req := Request{EnvelopeSender: sender, HeloIdentity: helo}
 	if clientIP != "" {
-		req.ClientIP = mustIP(t, clientIP)
+		req.CandidateIP = mustIP(t, clientIP)
 	}
 	res, err := Evaluate(context.Background(), z, req)
 	if err != nil {
@@ -440,7 +440,7 @@ func TestAddressNormalisedBeforeMatching(t *testing.T) {
 	if err != nil {
 		t.Fatalf("NewCandidateSendingIP: %v", err)
 	}
-	res, err := Evaluate(context.Background(), z, Request{EnvelopeSender: "a@example.com", ClientIP: &ip})
+	res, err := Evaluate(context.Background(), z, Request{EnvelopeSender: "a@example.com", CandidateIP: &ip})
 	if err != nil {
 		t.Fatalf("Evaluate: %v", err)
 	}
@@ -503,8 +503,8 @@ func TestVerdictNotEvaluatedStillRendersTree(t *testing.T) {
 	if got.Tree == nil || len(got.Tree.Nodes) == 0 {
 		t.Fatal("Evaluation Tree is empty, want it rendered even without a client IP")
 	}
-	if got.ClientIP != nil {
-		t.Error("ClientIP is set, but auth must never invent a sending IP")
+	if got.CandidateIP != nil {
+		t.Error("CandidateIP is set, but auth must never invent a sending IP")
 	}
 
 	var out strings.Builder

@@ -224,7 +224,7 @@ type EvaluationTree struct {
 type Request struct {
 	EnvelopeSender string
 	HeloIdentity   string
-	ClientIP       *CandidateSendingIP
+	CandidateIP    *CandidateSendingIP
 }
 
 // Result is the SPF Verdict for a Request, with its provenance: the Verdict (or
@@ -239,5 +239,5 @@ type Result struct {
 	Tree        *EvaluationTree
 	Findings    []Finding
 	Lookups     int
-	ClientIP    *CandidateSendingIP
+	CandidateIP *CandidateSendingIP
 }

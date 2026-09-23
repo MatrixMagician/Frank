@@ -76,7 +76,7 @@ func TestGoldenAlignmentFailure(t *testing.T) {
 	spfRes, err := spf.Evaluate(context.Background(), z, spf.Request{
 		EnvelopeSender: "bounce@sender.example",
 		HeloIdentity:   "frank.invalid",
-		ClientIP:       &ip,
+		CandidateIP:    &ip,
 	})
 	if err != nil {
 		t.Fatalf("spf.Evaluate: %v", err)
@@ -126,7 +126,7 @@ func TestGoldenOverLimitSPF(t *testing.T) {
 	}
 	spfRes, err := spf.Evaluate(context.Background(), z, spf.Request{
 		EnvelopeSender: "bounce@sender.example",
-		ClientIP:       &ip,
+		CandidateIP:    &ip,
 	})
 	if err != nil {
 		t.Fatalf("spf.Evaluate: %v", err)
@@ -202,7 +202,7 @@ func TestObservedAndComputedAreDistinguishable(t *testing.T) {
 	if err != nil {
 		t.Fatalf("NewCandidateSendingIP: %v", err)
 	}
-	spfRes, _ := spf.Evaluate(context.Background(), z, spf.Request{EnvelopeSender: "bounce@sender.example", ClientIP: &ip})
+	spfRes, _ := spf.Evaluate(context.Background(), z, spf.Request{EnvelopeSender: "bounce@sender.example", CandidateIP: &ip})
 	dmarcRes, _ := dmarc.Evaluate(context.Background(), z, dmarc.Input{HeaderFromDomain: "victim.example", SPF: *spfRes})
 
 	d := Diagnose(Input{

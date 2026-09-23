@@ -310,7 +310,7 @@ func evaluateSPF(t *testing.T, z *resolve.Zone, sender, helo, clientIP string) *
 		if err != nil {
 			t.Fatalf("NewCandidateSendingIP: %v", err)
 		}
-		req.ClientIP = &ip
+		req.CandidateIP = &ip
 	}
 	res, err := spf.Evaluate(context.Background(), z, req)
 	if err != nil {

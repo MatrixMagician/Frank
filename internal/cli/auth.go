@@ -70,7 +70,7 @@ func runAuthWith(ctx context.Context, opts *Options, a authOptions, stdout, stde
 			fmt.Fprintf(stderr, "frank auth: %v\n", err)
 			return CodeUsage
 		}
-		req.ClientIP = &ip
+		req.CandidateIP = &ip
 	}
 
 	r := a.resolver
