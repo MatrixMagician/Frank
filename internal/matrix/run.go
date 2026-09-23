@@ -109,7 +109,7 @@ func probeConfig(cfg Config, t Triple) smtpconv.Config {
 	out := cfg.Base
 	out.TargetHost = cfg.TargetHost
 	out.Recipient = smtpconv.Recipient(cfg.Recipient)
-	out.Identities = smtpconv.Identities{
+	out.Triple = smtpconv.IdentityTriple{
 		EnvelopeSender: envelopeSenderFor(t.EnvelopeSender),
 		HeloIdentity:   t.HeloIdentity,
 		HeaderFrom:     t.HeaderFrom,

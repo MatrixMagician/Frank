@@ -25,7 +25,7 @@ func authProbe(t *testing.T, srv *smtptest.Server, mode TLSMode, creds Credentia
 	}
 	return Run(Config{
 		TargetHost: srv.Addr(),
-		Identities: Identities{
+		Triple: IdentityTriple{
 			EnvelopeSender: NewEnvelopeSender("bounce@sender.example"),
 			HeloIdentity:   "frank.invalid",
 			HeaderFrom:     "author@sender.example",

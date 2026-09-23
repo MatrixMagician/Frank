@@ -63,7 +63,7 @@ func TestRejectedTripleIsolated(t *testing.T) {
 		HeaderFrom:     "ceo@victim.example",
 	}
 	srv := smtptest.Start(t, smtptest.RejectTriple(smtptest.PhaseEndOfData,
-		smtptest.Triple{EnvelopeSender: rejected.EnvelopeSender, HeaderFrom: rejected.HeaderFrom},
+		smtptest.ObservedTriple{EnvelopeSender: rejected.EnvelopeSender, HeaderFrom: rejected.HeaderFrom},
 		550, "5.7.1", "sender address not owned by authenticated user"))
 
 	m := sweep(t, srv, testSlots())
@@ -270,7 +270,7 @@ func TestTriplesAreTheCartesianProductInAStableOrder(t *testing.T) {
 
 func TestBoundaryNamesTheDiscriminatingSlot(t *testing.T) {
 	srv := smtptest.Start(t, smtptest.RejectTriple(smtptest.PhaseEndOfData,
-		smtptest.Triple{HeaderFrom: "ceo@victim.example"},
+		smtptest.ObservedTriple{HeaderFrom: "ceo@victim.example"},
 		550, "5.7.1", "not allowed"))
 
 	m := sweep(t, srv, testSlots())
@@ -311,7 +311,7 @@ func TestConcurrentSweepIsRaceFree(t *testing.T) {
 
 func TestRenderJSONCarriesResolutionAndBoundary(t *testing.T) {
 	srv := smtptest.Start(t, smtptest.RejectTriple(smtptest.PhaseEndOfData,
-		smtptest.Triple{HeaderFrom: "ceo@victim.example"},
+		smtptest.ObservedTriple{HeaderFrom: "ceo@victim.example"},
 		550, "5.7.1", "not allowed"))
 
 	m := sweep(t, srv, testSlots())

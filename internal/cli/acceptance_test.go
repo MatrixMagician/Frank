@@ -27,7 +27,7 @@ func TestMatrixExitCodes(t *testing.T) {
 		{
 			name: "any rejected cell exits 1",
 			opts: []smtptest.Option{smtptest.RejectTriple(smtptest.PhaseEndOfData,
-				smtptest.Triple{HeaderFrom: "ceo@victim.example"},
+				smtptest.ObservedTriple{HeaderFrom: "ceo@victim.example"},
 				550, "5.7.1", "not allowed")},
 			want: CodeRejection,
 		},

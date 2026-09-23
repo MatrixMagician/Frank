@@ -70,15 +70,15 @@ type State struct {
 	// Triple is what the connection has revealed of the Identity Triple so
 	// far. HeaderFrom is only populated once the DATA payload has been read,
 	// so a rule matching on it belongs at PhaseEndOfData.
-	Triple Triple
+	Triple ObservedTriple
 	// Refusals counts how many rules have already refused on THIS connection.
 	// A rule matching on Refusals > 0 is per-connection state tightening,
 	// which is what ADR-0003's fresh-connection decision exists to avoid.
 	Refusals int
 }
 
-// Triple is the Identity Triple as the server observed it.
-type Triple struct {
+// ObservedTriple is as much of the Identity Triple as the server has observed so far.
+type ObservedTriple struct {
 	EnvelopeSender string
 	HeloIdentity   string
 	HeaderFrom     string
@@ -148,7 +148,7 @@ func Reject(p Phase, code int, enhanced, text string) Option {
 
 // RejectTriple refuses at a Phase only for one Identity Triple, accepting
 // every other. An empty field in want means "any value".
-func RejectTriple(p Phase, want Triple, code int, enhanced, text string) Option {
+func RejectTriple(p Phase, want ObservedTriple, code int, enhanced, text string) Option {
 	return WithRule(Rule{
 		Phase: p,
 		When:  func(s State) bool { return tripleMatches(want, s.Triple) },
@@ -183,7 +183,7 @@ func Delay(p Phase, d time.Duration) Option {
 	return WithRule(Rule{Phase: p, Delay: d, Reply: Reply{Code: 0}})
 }
 
-func tripleMatches(want, got Triple) bool {
+func tripleMatches(want, got ObservedTriple) bool {
 	if want.EnvelopeSender != "" && !strings.EqualFold(want.EnvelopeSender, got.EnvelopeSender) {
 		return false
 	}
@@ -193,7 +193,7 @@ func tripleMatches(want, got Triple) bool {
 	if want.HeaderFrom != "" && !strings.EqualFold(want.HeaderFrom, got.HeaderFrom) {
 		return false
 	}
-	return want != Triple{}
+	return want != ObservedTriple{}
 }
 
 // table is the ordered rule set, consulted at each Phase.

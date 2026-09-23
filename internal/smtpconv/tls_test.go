@@ -17,7 +17,7 @@ func tlsProbe(t *testing.T, srv *smtptest.Server, mode TLSMode, verify bool, roo
 	t.Helper()
 	return Run(Config{
 		TargetHost: srv.Addr(),
-		Identities: Identities{
+		Triple: IdentityTriple{
 			EnvelopeSender: NewEnvelopeSender("bounce@sender.example"),
 			HeloIdentity:   "frank.invalid",
 			HeaderFrom:     "author@sender.example",
@@ -282,7 +282,7 @@ func TestServerNameDefaultsToTheTargetHost(t *testing.T) {
 	srv := smtptest.Start(t, smtptest.WithSTARTTLS())
 	res := Run(Config{
 		TargetHost: srv.Addr(),
-		Identities: Identities{
+		Triple: IdentityTriple{
 			EnvelopeSender: NewEnvelopeSender("a@example.com"),
 			HeloIdentity:   "frank.invalid",
 			HeaderFrom:     "a@example.com",

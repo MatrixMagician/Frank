@@ -113,7 +113,7 @@ func probeCmd(opts *Options, args []string, stdout, stderr io.Writer) Code {
 
 	cfg := smtpconv.Config{
 		TargetHost: target,
-		Identities: smtpconv.Identities{
+		Triple: smtpconv.IdentityTriple{
 			EnvelopeSender: envelopeSender,
 			HeloIdentity:   pf.helo,
 			HeaderFrom:     pf.headerFrom,

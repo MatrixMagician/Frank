@@ -13,7 +13,7 @@ import (
 func testConfig(addr string, dryRun bool) Config {
 	return Config{
 		TargetHost: addr,
-		Identities: Identities{
+		Triple: IdentityTriple{
 			EnvelopeSender: NewEnvelopeSender("envelope@sender.example"),
 			HeloIdentity:   "client.helo.example",
 			HeaderFrom:     "header@from.example",
@@ -46,7 +46,7 @@ func rawJoined(tr *transcript.Transcript, phase transcript.Phase) string {
 func TestIdentitySlotsAreIndependent(t *testing.T) {
 	srv := smtptest.Start(t)
 	cfg := testConfig(srv.Addr(), false)
-	cfg.Identities = Identities{
+	cfg.Triple = IdentityTriple{
 		EnvelopeSender: NewEnvelopeSender("one@envelope.example"),
 		HeloIdentity:   "two.helo.example",
 		HeaderFrom:     "three@header.example",
@@ -86,7 +86,7 @@ func TestIdentitySlotsAreIndependent(t *testing.T) {
 func TestMismatchedIdentitiesAppearVerbatimAtCorrectPhases(t *testing.T) {
 	srv := smtptest.Start(t)
 	cfg := testConfig(srv.Addr(), false)
-	cfg.Identities = Identities{
+	cfg.Triple = IdentityTriple{
 		EnvelopeSender: NewEnvelopeSender("envelope-value@one.example"),
 		HeloIdentity:   "helo-value.two.example",
 		HeaderFrom:     "header-value@three.example",
@@ -362,7 +362,7 @@ func TestQuitOnEveryExitPathIncludingErrors(t *testing.T) {
 func TestNullEnvelopeSenderIsLegal(t *testing.T) {
 	srv := smtptest.Start(t)
 	cfg := testConfig(srv.Addr(), false)
-	cfg.Identities.EnvelopeSender = NullEnvelopeSender()
+	cfg.Triple.EnvelopeSender = NullEnvelopeSender()
 
 	res := Run(cfg)
 	if res.Err != nil {

@@ -238,7 +238,7 @@ func TestSTARTTLSRefusedWhenNotOffered(t *testing.T) {
 }
 
 func TestRejectsNamedIdentityTripleAcceptsOthers(t *testing.T) {
-	rejected := Triple{EnvelopeSender: "bounce@sender.example", HeaderFrom: "ceo@victim.example"}
+	rejected := ObservedTriple{EnvelopeSender: "bounce@sender.example", HeaderFrom: "ceo@victim.example"}
 	s := Start(t, RejectTriple(PhaseEndOfData, rejected, 550, "5.7.1", "sender not allowed by policy"))
 
 	deliver := func(envelope, headerFrom string) int {
@@ -360,7 +360,7 @@ func TestHeaderFromIsParsedFromDATA(t *testing.T) {
 	c.send("From: <header@author.example>\r\nSubject: probe\r\n\r\nbody\r\n.")
 
 	got := s.Received()[0].Triple
-	want := Triple{
+	want := ObservedTriple{
 		EnvelopeSender: "envelope@sender.example",
 		HeloIdentity:   "frank.invalid",
 		HeaderFrom:     "header@author.example",

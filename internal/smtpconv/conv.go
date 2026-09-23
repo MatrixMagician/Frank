@@ -69,7 +69,7 @@ func (e EnvelopeSender) identityValue() string {
 	return e.address
 }
 
-type Identities struct {
+type IdentityTriple struct {
 	EnvelopeSender EnvelopeSender
 	HeloIdentity   string
 	HeaderFrom     string
@@ -79,7 +79,7 @@ type Identities struct {
 // seams: a nil Dialer dials real TCP, a nil Now uses time.Now.
 type Config struct {
 	TargetHost  string
-	Identities  Identities
+	Triple      IdentityTriple
 	Recipient   Recipient
 	DryRun      bool
 	Dialer      Dialer
@@ -122,13 +122,13 @@ func validate(cfg Config) error {
 	if cfg.Recipient == "" {
 		return fmt.Errorf("smtpconv: recipient is empty")
 	}
-	if cfg.Identities.HeloIdentity == "" {
+	if cfg.Triple.HeloIdentity == "" {
 		return fmt.Errorf("smtpconv: helo identity is empty")
 	}
-	if cfg.Identities.HeaderFrom == "" {
+	if cfg.Triple.HeaderFrom == "" {
 		return fmt.Errorf("smtpconv: header from is empty")
 	}
-	if !cfg.Identities.EnvelopeSender.IsSet() {
+	if !cfg.Triple.EnvelopeSender.IsSet() {
 		return fmt.Errorf("smtpconv: envelope sender is not set")
 	}
 	return nil
@@ -143,9 +143,9 @@ func Run(cfg Config) *Result {
 	}
 
 	identity := transcript.IdentityTriple{
-		EnvelopeSender: cfg.Identities.EnvelopeSender.identityValue(),
-		HeloIdentity:   cfg.Identities.HeloIdentity,
-		HeaderFrom:     cfg.Identities.HeaderFrom,
+		EnvelopeSender: cfg.Triple.EnvelopeSender.identityValue(),
+		HeloIdentity:   cfg.Triple.HeloIdentity,
+		HeaderFrom:     cfg.Triple.HeaderFrom,
 	}
 	tr := transcript.NewTranscript(cfg.TargetHost, identity, string(cfg.Recipient))
 	res := &Result{Transcript: tr, Durations: map[transcript.Phase]time.Duration{}}
@@ -192,7 +192,7 @@ func Run(cfg Config) *Result {
 	}
 
 	ehloIdx := len(tr.Events)
-	reply, ok = ehlo(tr, res, conn, reader, cfg.Identities.HeloIdentity)
+	reply, ok = ehlo(tr, res, conn, reader, cfg.Triple.HeloIdentity)
 	if !ok {
 		return res
 	}
@@ -225,7 +225,7 @@ func Run(cfg Config) *Result {
 		// The extension list from the plaintext EHLO cannot be trusted after an
 		// upgrade, and RFC 3207 requires the client re-issue EHLO.
 		ehloIdx = len(tr.Events)
-		reply, ok = ehlo(tr, res, conn, reader, cfg.Identities.HeloIdentity)
+		reply, ok = ehlo(tr, res, conn, reader, cfg.Triple.HeloIdentity)
 		if !ok {
 			return res
 		}
@@ -256,7 +256,7 @@ func Run(cfg Config) *Result {
 
 	mailFromIdx := len(tr.Events)
 	reply, ok = verb(tr, res, conn, reader, transcript.PhaseMailFrom,
-		"MAIL FROM:"+cfg.Identities.EnvelopeSender.mailFromArg())
+		"MAIL FROM:"+cfg.Triple.EnvelopeSender.mailFromArg())
 	if !ok {
 		return res
 	}
@@ -293,7 +293,7 @@ func Run(cfg Config) *Result {
 		return res
 	}
 
-	msg, err := NewProbeMessage(cfg.Identities.HeaderFrom, string(cfg.Recipient), now())
+	msg, err := NewProbeMessage(cfg.Triple.HeaderFrom, string(cfg.Recipient), now())
 	if err != nil {
 		res.Err = fmt.Errorf("smtpconv: build probe message: %w", err)
 		return res

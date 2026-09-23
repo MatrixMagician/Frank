@@ -24,7 +24,7 @@ type TB interface {
 // Received is one message the server accepted, kept so a test can assert what
 // actually crossed the wire rather than what the client believes it sent.
 type Received struct {
-	Triple  Triple
+	Triple  ObservedTriple
 	Data    string
 	Auth    []Credential
 	TLS     bool
@@ -161,7 +161,7 @@ func (s *Server) acceptLoop() {
 type session struct {
 	ordinal  int
 	tls      bool
-	triple   Triple
+	triple   ObservedTriple
 	refusals int
 	creds    []Credential
 	greeted  bool
@@ -234,7 +234,7 @@ func (s *Server) serve(conn net.Conn, ordinal int) {
 			rw = bufio.NewReadWriter(bufio.NewReader(tconn), bufio.NewWriter(tconn))
 			sess.tls = true
 			sess.greeted = false
-			sess.triple = Triple{}
+			sess.triple = ObservedTriple{}
 
 		case "AUTH":
 			if !s.handleAuth(rw, sess, arg) {
@@ -275,7 +275,7 @@ func (s *Server) serve(conn net.Conn, ordinal int) {
 			s.recordReceived(sess, body)
 
 		case "RSET":
-			sess.triple = Triple{}
+			sess.triple = ObservedTriple{}
 			if err := s.write(rw, Reply{Code: 250, Enhanced: "2.0.0", Text: "reset"}); err != nil {
 				return
 			}
