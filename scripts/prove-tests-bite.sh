@@ -121,7 +121,7 @@ mutate 2.6 "rendering never mutates the transcript" \
 
 mutate 3.4 "the double rejects only the named identity triple" \
 	internal/smtptest/rules.go \
-	"s = s.replace('return want != Triple{}', 'return false')" \
+	"s = s.replace('return want != ObservedTriple{}', 'return false')" \
 	TestRejectsNamedIdentityTripleAcceptsOthers ./internal/smtptest/
 
 mutate 3.5 "greylisting defers the first connection and accepts a later one" \
@@ -133,7 +133,7 @@ mutate 3.5 "greylisting defers the first connection and accepts a later one" \
 
 mutate 4.2 "the three identities reach the wire verbatim" \
 	internal/smtpconv/conv.go \
-	"s = s.replace('\\\"MAIL FROM:\\\"+cfg.Identities.EnvelopeSender.mailFromArg()', '\\\"MAIL FROM:<redacted@example.com>\\\"')" \
+	"s = s.replace('\\\"MAIL FROM:\\\"+cfg.Triple.EnvelopeSender.mailFromArg()', '\\\"MAIL FROM:<redacted@example.com>\\\"')" \
 	TestMismatchedIdentitiesAppearVerbatimAtCorrectPhases ./internal/smtpconv/
 
 mutate 4.3 "EHLO falls back to HELO and the fallback is recorded" \
