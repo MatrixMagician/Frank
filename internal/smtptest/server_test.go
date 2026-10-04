@@ -28,7 +28,11 @@ func dial(t *testing.T, s *Server) *client {
 	if err != nil {
 		t.Fatalf("dial: %v", err)
 	}
-	t.Cleanup(func() { conn.Close() })
+	t.Cleanup(func() {
+		if err := conn.Close(); err != nil {
+			t.Errorf("close: %v", err)
+		}
+	})
 	return &client{conn: conn, rw: bufio.NewReadWriter(bufio.NewReader(conn), bufio.NewWriter(conn)), t: t}
 }
 
@@ -37,7 +41,7 @@ func (c *client) readReply() (int, []string) {
 	c.t.Helper()
 	var lines []string
 	for {
-		line, err := c.rw.Reader.ReadString('\n')
+		line, err := c.rw.ReadString('\n')
 		if err != nil {
 			c.t.Fatalf("read: %v", err)
 		}
@@ -45,7 +49,9 @@ func (c *client) readReply() (int, []string) {
 		lines = append(lines, line)
 		if len(line) < 4 || line[3] == ' ' {
 			code := 0
-			fmt.Sscanf(line[:3], "%d", &code)
+			if _, err := fmt.Sscanf(line[:3], "%d", &code); err != nil {
+				c.t.Fatalf("reply code in %q: %v", line, err)
+			}
 			return code, lines
 		}
 	}
@@ -54,7 +60,7 @@ func (c *client) readReply() (int, []string) {
 func (c *client) send(format string, args ...any) (int, []string) {
 	c.t.Helper()
 	fmt.Fprintf(c.rw.Writer, format+"\r\n", args...)
-	if err := c.rw.Writer.Flush(); err != nil {
+	if err := c.rw.Flush(); err != nil {
 		c.t.Fatalf("flush: %v", err)
 	}
 	return c.readReply()
@@ -486,21 +492,36 @@ func TestConcurrentConnectionsAreRaceFree(t *testing.T) {
 				t.Errorf("dial: %v", err)
 				return
 			}
-			defer conn.Close()
+			defer func() {
+				if err := conn.Close(); err != nil {
+					t.Errorf("close: %v", err)
+				}
+			}()
 			rw := bufio.NewReadWriter(bufio.NewReader(conn), bufio.NewWriter(conn))
-			rw.Reader.ReadString('\n')
+			if _, err := rw.ReadString('\n'); err != nil {
+				t.Errorf("read banner: %v", err)
+				return
+			}
 			fmt.Fprint(rw.Writer, "EHLO frank.invalid\r\n")
-			rw.Writer.Flush()
+			if err := rw.Flush(); err != nil {
+				t.Errorf("flush: %v", err)
+				return
+			}
 			for {
-				line, err := rw.Reader.ReadString('\n')
+				line, err := rw.ReadString('\n')
 				if err != nil || len(line) < 4 || line[3] == ' ' {
 					break
 				}
 			}
 			fmt.Fprint(rw.Writer, "MAIL FROM:<a@example.com>\r\nRCPT TO:<b@example.com>\r\nDATA\r\n")
-			rw.Writer.Flush()
+			if err := rw.Flush(); err != nil {
+				t.Errorf("flush: %v", err)
+				return
+			}
 			fmt.Fprint(rw.Writer, "From: a@example.com\r\n\r\nbody\r\n.\r\nQUIT\r\n")
-			rw.Writer.Flush()
+			if err := rw.Flush(); err != nil {
+				t.Errorf("flush: %v", err)
+			}
 		}()
 	}
 	wg.Wait()

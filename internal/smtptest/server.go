@@ -130,7 +130,7 @@ func (s *Server) Close() {
 	default:
 	}
 	close(s.closed)
-	s.ln.Close()
+	_ = s.ln.Close()
 	s.wg.Wait()
 }
 
@@ -149,7 +149,9 @@ func (s *Server) acceptLoop() {
 		s.wg.Add(1)
 		go func() {
 			defer s.wg.Done()
-			defer conn.Close()
+			// A test double has no caller to report a close error to; clients
+			// observe the session through its replies.
+			defer func() { _ = conn.Close() }()
 			s.serve(conn, ordinal)
 		}()
 	}
@@ -176,7 +178,7 @@ func (s *Server) serve(conn net.Conn, ordinal int) {
 	}
 
 	for {
-		line, err := rw.Reader.ReadString('\n')
+		line, err := rw.ReadString('\n')
 		if err != nil {
 			return
 		}
@@ -342,10 +344,10 @@ func (s *Server) emitReply(rw *bufio.ReadWriter, sess *session, r Reply) bool {
 }
 
 func (s *Server) write(rw *bufio.ReadWriter, r Reply) error {
-	if _, err := rw.Writer.WriteString(r.line(' ')); err != nil {
+	if _, err := rw.WriteString(r.line(' ')); err != nil {
 		return err
 	}
-	return rw.Writer.Flush()
+	return rw.Flush()
 }
 
 func (s *Server) writeEHLO(rw *bufio.ReadWriter, sess *session) error {
@@ -360,7 +362,7 @@ func (s *Server) writeEHLO(rw *bufio.ReadWriter, sess *session) error {
 			return err
 		}
 	}
-	return rw.Writer.Flush()
+	return rw.Flush()
 }
 
 // effectiveExtensions drops STARTTLS once the connection is already encrypted
@@ -445,7 +447,7 @@ func headerValue(body, name string) string {
 func readDATA(rw *bufio.ReadWriter) (string, error) {
 	var b strings.Builder
 	for {
-		line, err := rw.Reader.ReadString('\n')
+		line, err := rw.ReadString('\n')
 		if err != nil {
 			return "", err
 		}
@@ -453,9 +455,7 @@ func readDATA(rw *bufio.ReadWriter) (string, error) {
 		if trimmed == "." {
 			return b.String(), nil
 		}
-		if strings.HasPrefix(trimmed, ".") {
-			trimmed = trimmed[1:]
-		}
+		trimmed = strings.TrimPrefix(trimmed, ".")
 		b.WriteString(trimmed)
 		b.WriteString("\r\n")
 	}
@@ -476,7 +476,7 @@ func (s *Server) handleAuth(rw *bufio.ReadWriter, sess *session, arg string) boo
 			if err := s.write(rw, Reply{Code: 334, Text: ""}); err != nil {
 				return false
 			}
-			line, err := rw.Reader.ReadString('\n')
+			line, err := rw.ReadString('\n')
 			if err != nil {
 				return false
 			}
@@ -496,7 +496,7 @@ func (s *Server) handleAuth(rw *bufio.ReadWriter, sess *session, arg string) boo
 		if err := s.write(rw, Reply{Code: 334, Text: base64.StdEncoding.EncodeToString([]byte("Username:"))}); err != nil {
 			return false
 		}
-		userLine, err := rw.Reader.ReadString('\n')
+		userLine, err := rw.ReadString('\n')
 		if err != nil {
 			return false
 		}
@@ -504,7 +504,7 @@ func (s *Server) handleAuth(rw *bufio.ReadWriter, sess *session, arg string) boo
 		if err := s.write(rw, Reply{Code: 334, Text: base64.StdEncoding.EncodeToString([]byte("Password:"))}); err != nil {
 			return false
 		}
-		passLine, err := rw.Reader.ReadString('\n')
+		passLine, err := rw.ReadString('\n')
 		if err != nil {
 			return false
 		}

@@ -392,7 +392,9 @@ func TestUnreachableTargetProducesPopulatedTranscript(t *testing.T) {
 		t.Fatalf("listen: %v", err)
 	}
 	addr := ln.Addr().String()
-	ln.Close()
+	if err := ln.Close(); err != nil {
+		t.Fatalf("close listener: %v", err)
+	}
 
 	cfg := testConfig(addr, true)
 	res := Run(cfg)
