@@ -144,6 +144,7 @@ func probeCmd(opts *Options, args []string, stdout, stderr io.Writer) Code {
 	}
 	smtpconv.RegisterCredentials(redactor, creds)
 
+	var renderErr error
 	if res.Transcript != nil {
 		// The report carries the Verdicts as well as the Outcomes, so a reader
 		// gets the same synthesis `frank explain` would give without having to
@@ -166,14 +167,20 @@ func probeCmd(opts *Options, args []string, stdout, stderr io.Writer) Code {
 			fmt.Fprintf(stderr, "frank probe: %v\n", err)
 		}
 		if opts.JSON {
-			transcript.RenderJSON(stdout, res.Transcript, redactor)
+			renderErr = transcript.RenderJSON(stdout, res.Transcript, redactor)
 		} else {
-			transcript.RenderText(stdout, res.Transcript, redactor)
+			renderErr = transcript.RenderText(stdout, res.Transcript, redactor)
+		}
+		if renderErr != nil {
+			fmt.Fprintf(stderr, "frank probe: %v\n", renderErr)
 		}
 	}
 
 	if res.Err != nil {
 		fmt.Fprintf(stderr, "frank probe: %v\n", res.Err)
+	}
+	if renderErr != nil {
+		return CodeIncomplete
 	}
 
 	return mapResultToCode(res)

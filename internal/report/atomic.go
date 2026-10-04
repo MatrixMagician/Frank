@@ -24,9 +24,12 @@ func WriteFileAtomically(path string, write func(io.Writer) error) error {
 	}
 	tmpName := tmp.Name()
 
+	// Cleanup only: on success tmp is already closed (and checked) and renamed
+	// away, so both calls fail harmlessly; on failure the error being returned
+	// is the one that matters.
 	defer func() {
-		tmp.Close()
-		os.Remove(tmpName)
+		_ = tmp.Close()
+		_ = os.Remove(tmpName)
 	}()
 
 	if err := write(tmp); err != nil {

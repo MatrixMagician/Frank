@@ -75,14 +75,20 @@ func tlsClaims() {
 		fmt.Println("FAIL listen:", err)
 		return
 	}
-	defer ln.Close()
+	defer func() { _ = ln.Close() }()
 	go func() {
 		for {
 			c, err := ln.Accept()
 			if err != nil {
 				return
 			}
-			go func() { c.(*tls.Conn).Handshake(); time.Sleep(50 * time.Millisecond); c.Close() }()
+			// The client side reports any handshake failure; the server side has
+			// nowhere to report it.
+			go func() {
+				_ = c.(*tls.Conn).Handshake()
+				time.Sleep(50 * time.Millisecond)
+				_ = c.Close()
+			}()
 		}
 	}()
 
@@ -122,7 +128,9 @@ func tlsClaims() {
 	pool.AddCert(leaf)
 	_, verr = leaf.Verify(x509.VerifyOptions{DNSName: "frank.test", Roots: pool})
 	check("self-verify against seeded pool succeeds", verr == nil, true)
-	conn.Close()
+	if err := conn.Close(); err != nil {
+		fmt.Println("FAIL close:", err)
+	}
 }
 
 func main() {

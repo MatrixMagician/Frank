@@ -3,6 +3,7 @@ package smtpconv
 import (
 	"bufio"
 	"crypto/x509"
+	"errors"
 	"fmt"
 	"net"
 	"net/netip"
@@ -167,7 +168,13 @@ func Run(cfg Config) *Result {
 		res.Err = fmt.Errorf("smtpconv: dial: %w", err)
 		return res
 	}
-	defer conn.Close()
+	// Close the dialed connection, not whatever conn holds after STARTTLS.
+	rawConn := conn
+	defer func() {
+		if err := rawConn.Close(); err != nil {
+			res.Err = errors.Join(res.Err, fmt.Errorf("smtpconv: close: %w", err))
+		}
+	}()
 
 	if addrPort, ok := tcpAddrPort(conn.LocalAddr()); ok {
 		tr.SourceAddr = transcript.NewSourceAddress(addrPort.Addr())

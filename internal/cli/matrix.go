@@ -118,9 +118,13 @@ func matrixCmd(opts *Options, args []string, stdout, stderr io.Writer) Code {
 	}
 
 	if opts.JSON {
-		matrix.RenderJSON(stdout, m)
+		err = matrix.RenderJSON(stdout, m)
 	} else {
-		matrix.Render(stdout, m)
+		err = matrix.Render(stdout, m)
+	}
+	if err != nil {
+		fmt.Fprintf(stderr, "frank matrix: %v\n", err)
+		return CodeIncomplete
 	}
 
 	return matrixCode(m)
