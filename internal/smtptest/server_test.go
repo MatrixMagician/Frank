@@ -376,6 +376,54 @@ func TestHeaderFromIsParsedFromDATA(t *testing.T) {
 	}
 }
 
+// heldAcceptConn delivers the end-of-DATA acceptance to the client, then holds
+// the server inside that write until released. Anything the server does after
+// replying cannot have happened while the hold is on.
+type heldAcceptConn struct {
+	net.Conn
+	release chan struct{}
+}
+
+func (c heldAcceptConn) Write(p []byte) (int, error) {
+	n, err := c.Conn.Write(p)
+	if strings.Contains(string(p), "message accepted") {
+		<-c.release
+	}
+	return n, err
+}
+
+// A client that has read the 250 for its message must find that message in
+// Received; tests read it straight after the reply (issue #27).
+func TestAcceptedMessageIsReceivedBeforeTheReplyArrives(t *testing.T) {
+	s := Start(t)
+	serverSide, clientSide := net.Pipe()
+	held := heldAcceptConn{Conn: serverSide, release: make(chan struct{})}
+	done := make(chan struct{})
+	go func() {
+		defer close(done)
+		s.serve(held, 1)
+	}()
+	t.Cleanup(func() {
+		close(held.release)
+		_ = clientSide.Close()
+		<-done
+	})
+
+	c := &client{conn: clientSide, rw: bufio.NewReadWriter(bufio.NewReader(clientSide), bufio.NewWriter(clientSide)), t: t}
+	c.readReply()
+	c.send("EHLO frank.invalid")
+	c.send("MAIL FROM:<a@example.com>")
+	c.send("RCPT TO:<b@example.com>")
+	c.send("DATA")
+	if code, _ := c.send("Subject: probe\r\n\r\nbody\r\n."); code != 250 {
+		t.Fatalf("end of DATA = %d, want 250", code)
+	}
+
+	if got := len(s.Received()); got != 1 {
+		t.Fatalf("Received() has %d messages once the 250 arrived, want 1", got)
+	}
+}
+
 func TestNullEnvelopeSenderIsRecordedAsEmpty(t *testing.T) {
 	s := Start(t)
 	c := dial(t, s)
