@@ -5,8 +5,8 @@ import (
 	"context"
 	"net"
 	"strings"
-	"sync/atomic"
 	"testing"
+	"time"
 
 	"github.com/MatrixMagician/Frank/internal/resolve"
 )
@@ -66,20 +66,20 @@ func TestAuthWithoutCandidateIPReportsNotEvaluated(t *testing.T) {
 // circular: a fixture resolver cannot dial by construction, so such a test
 // passes however auth behaves. This one would catch auth growing a probe.
 func TestAuthOpensNoTCPConnection(t *testing.T) {
-	var accepted atomic.Int64
-
 	ln, err := net.Listen("tcp", "127.0.0.1:0")
 	if err != nil {
 		t.Fatalf("listen: %v", err)
 	}
 	t.Cleanup(func() { _ = ln.Close() })
+	// accepted carries each connection's client address, in accept order.
+	accepted := make(chan string, 64)
 	go func() {
 		for {
 			conn, err := ln.Accept()
 			if err != nil {
 				return
 			}
-			accepted.Add(1)
+			accepted <- conn.RemoteAddr().String()
 			_ = conn.Close()
 		}
 	}()
@@ -101,8 +101,29 @@ func TestAuthOpensNoTCPConnection(t *testing.T) {
 	if code != CodeAcceptance {
 		t.Fatalf("code = %v, want %v (stderr: %s)", code, CodeAcceptance, stderr.String())
 	}
-	if got := accepted.Load(); got != 0 {
-		t.Errorf("auth opened %d tcp connections to the listener, want 0", got)
+	// A dial completes in the kernel before Accept returns it, so counting now
+	// could miss a connection auth just made. The accept queue is FIFO: once a
+	// sentinel dialled after auth returned has been accepted, anything auth
+	// dialled has been accepted too (issue #29).
+	sentinel, err := net.Dial("tcp", ln.Addr().String())
+	if err != nil {
+		t.Fatalf("sentinel dial: %v", err)
+	}
+	t.Cleanup(func() { _ = sentinel.Close() })
+	opened := 0
+	for {
+		select {
+		case addr := <-accepted:
+			if addr == sentinel.LocalAddr().String() {
+				if opened != 0 {
+					t.Errorf("auth opened %d tcp connections to the listener, want 0", opened)
+				}
+				return
+			}
+			opened++
+		case <-time.After(5 * time.Second):
+			t.Fatal("the sentinel connection was never accepted")
+		}
 	}
 }
 
