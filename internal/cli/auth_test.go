@@ -72,7 +72,7 @@ func TestAuthOpensNoTCPConnection(t *testing.T) {
 	if err != nil {
 		t.Fatalf("listen: %v", err)
 	}
-	t.Cleanup(func() { ln.Close() })
+	t.Cleanup(func() { _ = ln.Close() })
 	go func() {
 		for {
 			conn, err := ln.Accept()
@@ -80,7 +80,7 @@ func TestAuthOpensNoTCPConnection(t *testing.T) {
 				return
 			}
 			accepted.Add(1)
-			conn.Close()
+			_ = conn.Close()
 		}
 	}()
 

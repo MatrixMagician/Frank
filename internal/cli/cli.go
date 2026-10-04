@@ -182,8 +182,3 @@ func run(args []string, stdout, stderr io.Writer, clock gate.Clock) Code {
 		return CodeUsage
 	}
 }
-
-func notImplemented(verb string, stderr io.Writer) Code {
-	fmt.Fprintf(stderr, "frank %s: not implemented\n", verb)
-	return CodeUsage
-}

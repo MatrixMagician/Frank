@@ -3,7 +3,6 @@
 package gate
 
 import (
-	"context"
 	"sync"
 	"time"
 )
@@ -58,24 +57,4 @@ func (c *FakeClock) Sleeps() []time.Duration {
 // does not care where the virtual timeline begins need not invent one.
 func NewFakeClockAtEpoch() *FakeClock {
 	return NewFakeClock(time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC))
-}
-
-// sleepWithContext sleeps unless ctx ends first. A fake clock is advanced
-// directly, so a test never blocks on real time.
-func sleepWithContext(ctx context.Context, clock Clock, d time.Duration) error {
-	if d <= 0 {
-		return ctx.Err()
-	}
-	if _, isReal := clock.(RealClock); !isReal {
-		clock.Sleep(d)
-		return ctx.Err()
-	}
-	timer := time.NewTimer(d)
-	defer timer.Stop()
-	select {
-	case <-ctx.Done():
-		return ctx.Err()
-	case <-timer.C:
-		return nil
-	}
 }

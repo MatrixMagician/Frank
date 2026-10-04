@@ -231,7 +231,9 @@ func TestNullEnvelopeSenderIsAFirstClassTripleValue(t *testing.T) {
 	}
 
 	var out bytes.Buffer
-	Render(&out, m)
+	if err := Render(&out, m); err != nil {
+		t.Fatalf("Render: %v", err)
+	}
 	if !strings.Contains(out.String(), "<>") {
 		t.Error("the rendering does not show the null sender as <>")
 	}

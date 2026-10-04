@@ -202,18 +202,20 @@ func TestResumedSessionSkipsCertificateCapture(t *testing.T) {
 	if err != nil {
 		t.Fatalf("listen: %v", err)
 	}
-	t.Cleanup(func() { ln.Close() })
+	t.Cleanup(func() { _ = ln.Close() })
 	go func() {
 		for {
 			c, err := ln.Accept()
 			if err != nil {
 				return
 			}
+			// The client side asserts on the handshake; this end only has to
+			// keep the connection open until the client hangs up.
 			go func() {
 				tc := tls.Server(c, serverCfg)
-				tc.Handshake()
-				io.Copy(io.Discard, tc)
-				tc.Close()
+				_ = tc.Handshake()
+				_, _ = io.Copy(io.Discard, tc)
+				_ = tc.Close()
 			}()
 		}
 	}()
@@ -245,11 +247,18 @@ func TestResumedSessionSkipsCertificateCapture(t *testing.T) {
 
 		// Under TLS 1.3 the ticket arrives after the handshake, so the cache is
 		// only populated once the client reads from the connection.
-		tconn.Write([]byte("x"))
-		tconn.SetReadDeadline(time.Now().Add(time.Second))
-		tconn.Read(make([]byte, 1))
-		tconn.Close()
-		conn.Close()
+		if _, err := tconn.Write([]byte("x")); err != nil {
+			t.Fatalf("write: %v", err)
+		}
+		if err := tconn.SetReadDeadline(time.Now().Add(time.Second)); err != nil {
+			t.Fatalf("set read deadline: %v", err)
+		}
+		// The server never writes, so this read ends at the deadline; it is
+		// only here to process the post-handshake ticket.
+		_, _ = tconn.Read(make([]byte, 1))
+		if err := tconn.Close(); err != nil {
+			t.Fatalf("close: %v", err)
+		}
 	}
 
 	if !resumed[1] {

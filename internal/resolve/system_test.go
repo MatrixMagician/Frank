@@ -16,13 +16,9 @@ import (
 // constructed but never queried is the proof that construction alone is
 // side-effect free.
 func TestSystemResolverSatisfiesInterface(t *testing.T) {
-	var r Resolver = NewSystem()
-	if r == nil {
+	sys := NewSystem()
+	if sys == nil {
 		t.Fatal("NewSystem returned nil")
-	}
-	sys, ok := r.(*System)
-	if !ok {
-		t.Fatalf("NewSystem() did not return a *System, got %T", r)
 	}
 	if !sys.resolver.PreferGo {
 		t.Fatal("System resolver must set PreferGo, per ADR-0006 and issue #7 (pure-Go, no CGO)")
