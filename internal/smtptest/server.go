@@ -271,10 +271,16 @@ func (s *Server) serve(conn net.Conn, ordinal int) {
 				return
 			}
 			sess.triple.HeaderFrom = extractAddress(headerValue(body, "From"))
-			if !s.replyAt(rw, sess, PhaseEndOfData, "", Reply{Code: 250, Enhanced: "2.0.0", Text: "message accepted"}) {
+			reply, ok := s.resolveReply(sess, PhaseEndOfData, "", Reply{Code: 250, Enhanced: "2.0.0", Text: "message accepted"})
+			if !ok {
 				return
 			}
+			// Record before replying: a client that has read the reply must
+			// already find the message in Received.
 			s.recordReceived(sess, body)
+			if !s.emitReply(rw, sess, reply) {
+				return
+			}
 
 		case "RSET":
 			sess.triple = ObservedTriple{}
@@ -312,18 +318,25 @@ func (s *Server) state(sess *session, arg string) State {
 // replyAt consults the rule table for this Phase and falls back to def when no
 // rule matches.
 func (s *Server) replyAt(rw *bufio.ReadWriter, sess *session, p Phase, arg string, def Reply) bool {
+	r, ok := s.resolveReply(sess, p, arg, def)
+	return ok && s.emitReply(rw, sess, r)
+}
+
+// resolveReply applies the matching rule's delay and picks the reply to send,
+// or reports false when the rule closes the connection instead.
+func (s *Server) resolveReply(sess *session, p Phase, arg string, def Reply) (Reply, bool) {
 	if r, ok := s.rules.match(p, s.state(sess, arg)); ok {
 		if r.Delay > 0 {
 			time.Sleep(r.Delay)
 		}
 		if r.Close {
-			return false
+			return Reply{}, false
 		}
 		if r.Reply.Code != 0 {
-			return s.emitReply(rw, sess, r.Reply)
+			return r.Reply, true
 		}
 	}
-	return s.emitReply(rw, sess, def)
+	return def, true
 }
 
 func (s *Server) emit(rw *bufio.ReadWriter, sess *session, r Rule) bool {
